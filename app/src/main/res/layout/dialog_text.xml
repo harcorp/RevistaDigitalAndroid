@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="@dimen/activity_vertical_margin">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Agrege un comentario no mayor a 255 caracteres"
+        android:id="@+id/comentario_info_text"
+        android:layout_centerHorizontal="true" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/comentario_info_text"
+        android:id="@+id/comentario_text_edit"
+        android:maxLength="255"
+        android:ems="1"/>
+    <TextView
+        android:id="@+id/comentario_text_contador"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/comentario_text_edit"
+        android:layout_alignRight="@+id/comentario_text_edit"
+        android:layout_below="@+id/comentario_text_edit"
+        android:text="0 / 255"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Publicar"
+        android:layout_below="@+id/comentario_text_contador"
+        android:layout_alignEnd="@+id/comentario_text_edit"
+        android:textAllCaps="true"
+        android:id="@+id/comentario_text_publicar"
+        style="@style/Widget.AppCompat.Button.Borderless"/>
+</RelativeLayout>

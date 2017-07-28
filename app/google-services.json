@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "17548864478",
+    "firebase_url": "https://revista-digital-bb5d4.firebaseio.com",
+    "project_id": "revista-digital-bb5d4",
+    "storage_bucket": "revista-digital-bb5d4.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:17548864478:android:d424c627d23526da",
+        "android_client_info": {
+          "package_name": "com.doinmedia.revistadigital.cliente"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "17548864478-psga34knofgq844p4sf4b8s678rmqpol.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.doinmedia.revistadigital.cliente",
+            "certificate_hash": "542711B5CBB9C949406812B60E3651319EA17647"
+          }
+        },
+        {
+          "client_id": "17548864478-2prqf1r6bd7uhuv7vo21bsn5t9otcren.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAv2vSW70k-2DUk2xYfNyg14BfbFAS2Is"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "17548864478-2prqf1r6bd7uhuv7vo21bsn5t9otcren.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

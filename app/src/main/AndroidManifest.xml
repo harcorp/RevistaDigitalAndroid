@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.doinmedia.revistadigital.cliente">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.STORAGE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:node="merge">
+        <activity
+            android:name=".UI.MainActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="sensorPortrait"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".UI.LibreriaActivity"
+            android:label="@string/menu_libreria"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.ArticulosActivity"
+            android:label="@string/menu_articulos"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.PublicacionActivity"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.ArticuloActivity"
+            android:parentActivityName=".UI.PublicacionActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.LoginActivity"
+            android:label="@string/action_login"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.QuienesSomosActivity"
+            android:label="@string/menu_quienes_somos"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.HistoriaActivity"
+            android:label="@string/menu_historia"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+        <activity
+            android:name=".UI.ContactoActivity"
+            android:label="@string/menu_contacto"
+            android:parentActivityName=".UI.MainActivity"
+            android:screenOrientation="sensorPortrait" />
+
+        <service
+            android:name=".Services.DownloadService"
+            android:exported="false" />
+
+        <activity android:name=".UI.RegistroActivity"
+            android:parentActivityName=".UI.LoginActivity"
+            android:label="@string/registro_titulo" />
+    </application>
+
+</manifest>
