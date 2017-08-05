@@ -28,6 +28,7 @@ import com.doinmedia.revistadigital.cliente.Models.Comentario;
 import com.doinmedia.revistadigital.cliente.R;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -63,7 +64,7 @@ public class VoiceAlert extends DialogFragment {
     private Button mAgregar;
     private ProgressBar mProgress;
     private DatabaseReference mRef;
-    private static String mKey;
+    private static String mKey, mUid;
 
     public TextView timerTextView, mInfoText;
     private long startHTime = 0L;
@@ -71,6 +72,7 @@ public class VoiceAlert extends DialogFragment {
     long timeInMilliseconds = 0L;
     long updatedTime = 0L;
     private static final Integer MAX_DURATION = 59;
+    private FirebaseAuth mAuth;
 
     public static VoiceAlert addSomeString(String temp){
         VoiceAlert f = new VoiceAlert();
@@ -90,6 +92,8 @@ public class VoiceAlert extends DialogFragment {
 
         builder.setView(v);
 
+        mAuth = FirebaseAuth.getInstance();
+        mUid = mAuth.getCurrentUser().getUid();
 
         record = (FloatingActionButton) v.findViewById(R.id.voice_record);
         Button reproducir = (Button) v.findViewById(R.id.voice_play);
@@ -172,12 +176,12 @@ public class VoiceAlert extends DialogFragment {
     private void cargarDatos(){
         String key = mRef.child("comentarios/" + mKey).push().getKey();
         final String filename = "audios/" + mKey + "/" + NameOfFile + ".3gp";
-        Comentario comentario = new Comentario("usuario_prueba", filename, null, false, 2);
+        Comentario comentario = new Comentario(mUid, filename, null, false, 2);
         Map<String, Object> postValues = comentario.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/comentarios/" + mKey + "/" + key, postValues);
-        childUpdates.put("/user-comentarios/" + "usuario_prueba" + "/" + mKey + "/" + key, postValues);
+        childUpdates.put("/user-comentarios/" + mUid + "/" + mKey + "/" + key, postValues);
         mRef.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
@@ -239,7 +243,7 @@ public class VoiceAlert extends DialogFragment {
     private void grabarAudio(){
         if(AudioSavePathInDevice == null){
             random = new Random();
-            NameOfFile = CreateRandomAudioFileName(10) + "uid_usuario";
+            NameOfFile = CreateRandomAudioFileName(10) + mUid;
             AudioSavePathInDevice =
                     Environment.getExternalStorageDirectory().getAbsolutePath() + "/" +
                              NameOfFile + ".3gp";

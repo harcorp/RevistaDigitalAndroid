@@ -13,7 +13,7 @@ import java.util.Map;
 public class Comentario {
 
     public String uid_user;
-    public String filename;
+    public String file;
     public String texto;
     public Boolean aproved;
     private Integer type;
@@ -22,9 +22,9 @@ public class Comentario {
 
     }
 
-    public Comentario(String uid_user, String filename, String texto, Boolean aproved, Integer type){
+    public Comentario(String uid_user, String file, String texto, Boolean aproved, Integer type){
         this.uid_user = uid_user;
-        this.filename = filename;
+        this.file = file;
         this.texto = texto;
         this.aproved = aproved;
         this.type = type;
@@ -36,13 +36,14 @@ public class Comentario {
 
     @Exclude
     public Map<String, Object> toMap() {
+
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid_user", uid_user);
-        result.put("filename", filename);
+        result.put("file", file);
         result.put("texto", texto);
         result.put("aproved", aproved);
         result.put("type", type);
-
+        result.put("timestamp",  -1 * System.currentTimeMillis());
         return result;
     }
 }

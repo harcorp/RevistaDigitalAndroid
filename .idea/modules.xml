@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/RevistaDigital.iml" filepath="$PROJECT_DIR$/RevistaDigital.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RevistaDigitalAndroid.iml" filepath="$PROJECT_DIR$/RevistaDigitalAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

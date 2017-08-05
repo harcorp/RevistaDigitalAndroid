@@ -6,6 +6,9 @@
 
     <string name="action_login">Iniciar Sesion</string>
     <string name="action_logout">Cerrar Sesión</string>
+    <string name="action_perfil">Perfil</string>
+    <string name="auth_failed">Prueba del mensaje</string>
+    <string name="loading">Cargando</string>
 
 
     <!-- MENU -->
@@ -26,11 +29,14 @@
     <string name="menu_voice">Nota de Voz</string>
     <string name="menu_video">Video</string>
 
-    <string name="download_success">Descargar Terminada</string>
+    <string name="download_success">Descarga Terminada</string>
     <string name="download_failure">Fallo la Descarga</string>
     <string name="progress_downloading">Descargando…</string>
     <string name="success">Completado.</string>
 
     <string name="registro_titulo">Registro</string>
+
+    <string name="facebook_app_id">258669091295143</string>
+    <string name="fb_login_protocol_scheme">fb258669091295143</string>
 
 </resources>

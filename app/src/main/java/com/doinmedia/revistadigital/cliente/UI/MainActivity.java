@@ -5,9 +5,11 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -24,6 +26,8 @@ import android.widget.ProgressBar;
 import com.doinmedia.revistadigital.cliente.Adapters.PublicacionAdapter;
 import com.doinmedia.revistadigital.cliente.Models.Publicacion;
 import com.doinmedia.revistadigital.cliente.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -43,12 +47,19 @@ public class MainActivity extends AppCompatActivity
     public Context mContext;
     private ProgressBar mProgress;
 
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseUser mUser;
+    private Menu menu;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mAuth = FirebaseAuth.getInstance();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -63,6 +74,20 @@ public class MainActivity extends AppCompatActivity
         mProgress = (ProgressBar) findViewById(R.id.load_publicaciones);
         mProgress.setVisibility(View.VISIBLE);
         setupRecyclerView();
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                mUser = firebaseAuth.getCurrentUser();
+                if (mUser != null) {
+                    Log.d(TAG, "loggeado");
+                    showLoggedMenu(true, false);
+                } else {
+                    Log.d(TAG, "no loggeado");
+                    showLoggedMenu(false, true);
+                }
+            }
+        };
     }
 
     public void setupRecyclerView(){
@@ -92,9 +117,33 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        this.menu = menu;
         getMenuInflater().inflate(R.menu.main, menu);
+
+        if(mUser != null){
+            showLoggedMenu(true, false);
+        }else{
+            showLoggedMenu(false, true);
+        }
         return true;
+    }
+
+    public void showLoggedMenu(boolean showUno, boolean showDos){
+        if(this.menu == null)
+            return;
+        this.menu.setGroupVisible(R.id.action_group_logged, showUno);
+        this.menu.findItem(R.id.action_login).setVisible(showDos);
+    }
+
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mUser = mAuth.getCurrentUser();
+        mAuth.addAuthStateListener(mAuthListener);
+
+
     }
 
     @Override
@@ -107,6 +156,11 @@ public class MainActivity extends AppCompatActivity
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_login) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+        } else if(id == R.id.action_logout){
+            signOut();
+        } else if(id == R.id.action_perfil){
+            Intent intent = new Intent(MainActivity.this, PerfilActivity.class);
             startActivity(intent);
         }
 
@@ -190,5 +244,9 @@ public class MainActivity extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
         mAdapter.destroy();
+    }
+
+    private void signOut() {
+        mAuth.signOut();
     }
 }

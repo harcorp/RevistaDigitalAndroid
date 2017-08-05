@@ -112,7 +112,7 @@ public class PublicacionActivity extends AppCompatActivity {
         mReciclador.setLayoutManager(mLayoutManager);
         mReciclador.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(5), true));
         mReciclador.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new ArticulosAdapter(getApplicationContext(), mRef.child("articulos/").orderByChild("parent").equalTo(mKey), Articulo.class, mAdapterItems, mAdapterKeys);
+        mAdapter = new ArticulosAdapter(getApplicationContext(), mRef.child("articulos/" + mKey), Articulo.class, mAdapterItems, mAdapterKeys);
         mReciclador.setAdapter(mAdapter);
         mReciclador.setVisibility(View.VISIBLE);
         mProgress.setVisibility(View.GONE);

@@ -3,10 +3,12 @@ package com.doinmedia.revistadigital.cliente.UI;
 
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +28,8 @@ import com.doinmedia.revistadigital.cliente.Models.Comentario;
 import com.doinmedia.revistadigital.cliente.R;
 import com.doinmedia.revistadigital.cliente.Tools.TextAlert;
 import com.doinmedia.revistadigital.cliente.Tools.VoiceAlert;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -53,8 +57,7 @@ public class ArticuloActivity extends AppCompatActivity {
     public static final String EXTRA_POST_KEY = "post_key";
     public static final String EXTRA_POST_TITLE= "post_title";
 
-    private String mKey;
-    private String mTitle;
+    private String mKey, mTitle, mParent, mUserUid;
 
     private TextView mTitulo, mDescripcion;
     private DatabaseReference mRef;
@@ -64,12 +67,15 @@ public class ArticuloActivity extends AppCompatActivity {
     private ComentarioAdapter mAdapter;
     private ArrayList<Comentario> mAdapterItems;
     private ArrayList<String> mAdapterKeys;
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_articulo);
-
+        SharedPreferences prefs = getSharedPreferences("RevistaPlanteamientosPrefs",Context.MODE_PRIVATE);
+        mParent = prefs.getString("last_uid", null);
         mKey = getIntent().getStringExtra(EXTRA_POST_KEY);
         mRef = FirebaseDatabase.getInstance().getReference();
         mTitle = getIntent().getStringExtra(EXTRA_POST_TITLE);
@@ -79,7 +85,7 @@ public class ArticuloActivity extends AppCompatActivity {
         mDescripcion = (TextView)findViewById(R.id.single_descripcion);
         mTitulo.setText(mTitle);
         configurarRecycler();
-        mRef.child("articulos").child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
+        mRef.child("articulos").child(mParent).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -94,7 +100,7 @@ public class ArticuloActivity extends AppCompatActivity {
             }
         });
 
-        FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_speed);
+        final FabSpeedDial fabSpeedDial = (FabSpeedDial) findViewById(R.id.fab_speed);
         fabSpeedDial.setMenuListener(new SimpleMenuListenerAdapter() {
             @Override
             public boolean onMenuItemSelected(MenuItem menuItem) {
@@ -121,7 +127,28 @@ public class ArticuloActivity extends AppCompatActivity {
                 return false;
             }
         });
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    mUserUid = user.getUid();
+                    Log.d(TAG, "Logged");
+                    fabSpeedDial.setVisibility(View.VISIBLE);
+                } else {
+                    Log.d(TAG, "NO LOGGED");
+                    fabSpeedDial.setVisibility(View.GONE);
+                }
+            }
+        };
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mAuth.addAuthStateListener(mAuthListener);
     }
 
     private void configurarRecycler(){
@@ -130,7 +157,6 @@ public class ArticuloActivity extends AppCompatActivity {
         mRecycler.setLayoutManager(new LinearLayoutManager(this));
         mRecycler.addItemDecoration(new SimpleDividerItemDecoration(this));
         Query query = mRef.child("comentarios").child(mKey).orderByChild("aproved").equalTo(true);
-        Log.d(TAG, query.getRef().toString());
         mAdapter = new ComentarioAdapter(getApplicationContext(), query, Comentario.class, mAdapterItems, mAdapterKeys);
         mRecycler.setAdapter(mAdapter);
     }

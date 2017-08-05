@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.doinmedia.revistadigital.cliente.Models.Comentario;
 import com.doinmedia.revistadigital.cliente.R;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -27,18 +28,16 @@ import java.util.Map;
 
 import static android.content.ContentValues.TAG;
 
-/**
- * Created by davidrodriguez on 24/01/17.
- */
 
 public class TextAlert extends DialogFragment {
 
-    private static String mKey;
+    private static String mKey, mUid;
     private TextView mInfoText, mContador;
     private EditText mComentario;
     private Button mEnviar;
 
     private DatabaseReference mRef;
+    private FirebaseAuth mAuth;
 
     public static TextAlert addString(String temp){
         TextAlert f = new TextAlert();
@@ -55,6 +54,8 @@ public class TextAlert extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         View v = inflater.inflate(R.layout.dialog_text, null);
+        mAuth = FirebaseAuth.getInstance();
+        mUid = mAuth.getCurrentUser().getUid();
 
         mInfoText = (TextView)v.findViewById(R.id.comentario_info_text);
         mContador = (TextView)v.findViewById(R.id.comentario_text_contador);
@@ -103,12 +104,12 @@ public class TextAlert extends DialogFragment {
     private void publicarComentario(){
         String key = mRef.child("comentarios/" + mKey).push().getKey();
         String coment = mComentario.getText().toString();
-        Comentario comentario = new Comentario("usuario_prueba", null, coment, false, 1);
+        Comentario comentario = new Comentario(mUid, null, coment, false, 1);
         Map<String, Object> postValues = comentario.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/comentarios/" + mKey + "/" + key, postValues);
-        childUpdates.put("/user-comentarios/" + "usuario_prueba" + "/" + mKey + "/" + key, postValues);
+        childUpdates.put("/user-comentarios/" + mUid + "/" + mKey + "/" + key, postValues);
         mRef.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {

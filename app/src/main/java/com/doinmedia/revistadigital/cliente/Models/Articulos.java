@@ -8,35 +8,41 @@ import com.google.firebase.database.IgnoreExtraProperties;
 @IgnoreExtraProperties
 public class Articulos {
 
-    private String filename;
+    private String file;
     private String nombre;
     private String descripcion;
-    private String fecha;
+    private Long fecha;
+    private String type;
 
     public Articulos(){
 
     }
 
-    public Articulos(String filename, String nombre, String descripcion, String fecha){
-        this.filename = filename;
+    public Articulos(String file, String nombre, String descripcion, Long fecha, String type){
+        this.file = file;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fecha = fecha;
+        this.type = type;
     }
 
     public String getDescripcion() {
         return descripcion;
     }
 
-    public String getFecha() {
+    public Long getFecha() {
         return fecha;
     }
 
-    public String getFilename() {
-        return filename;
+    public String getFile() {
+        return file;
     }
 
     public String getNombre() {
         return nombre;
+    }
+
+    public String getType(){
+        return type;
     }
 }

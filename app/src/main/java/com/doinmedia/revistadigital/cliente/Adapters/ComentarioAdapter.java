@@ -102,7 +102,7 @@ public class ComentarioAdapter extends FirebaseRecyclerAdapter<ComentarioAdapter
             case 2:
                 viewHolder.mAudio.setVisibility(View.VISIBLE);
                 viewHolder.mComentarioTexto.setText(String.valueOf(model.getType()));
-                controlVoice(viewHolder.mAudioPlay, viewHolder.mAudioPause, viewHolder.mAudioControl, model.filename);
+                controlVoice(viewHolder.mAudioPlay, viewHolder.mAudioPause, viewHolder.mAudioControl, model.file);
                 break;
         }
         mRef.child("users/" + model.uid_user + "/nombre").addListenerForSingleValueEvent(new ValueEventListener() {

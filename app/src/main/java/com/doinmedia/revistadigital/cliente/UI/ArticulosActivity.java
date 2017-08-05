@@ -3,55 +3,34 @@ package com.doinmedia.revistadigital.cliente.UI;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.ColorFilter;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
-import android.os.PowerManager;
-import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.doinmedia.revistadigital.cliente.Models.Articulo;
 import com.doinmedia.revistadigital.cliente.Models.Articulos;
 import com.doinmedia.revistadigital.cliente.R;
 import com.doinmedia.revistadigital.cliente.Services.DownloadService;
 import com.doinmedia.revistadigital.cliente.Tools.Tools;
 import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.BufferedInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.Calendar;
 import java.util.Locale;
-
-/**
- * Created by davidrodriguez on 4/01/17.
- */
 
 public class ArticulosActivity extends AppCompatActivity {
 
@@ -67,6 +46,8 @@ public class ArticulosActivity extends AppCompatActivity {
 
     private BroadcastReceiver mBroadcastReceiver;
     private ProgressDialog mProgressDialog;
+    private String fileUrl;
+    private boolean urlReady = false;
 
 
     @Override
@@ -113,23 +94,43 @@ public class ArticulosActivity extends AppCompatActivity {
             protected void populateView(View view, Articulos articulo, int position) {
                 ((TextView)view.findViewById(R.id.file_list_nombre)).setText(articulo.getNombre());
                 ((TextView)view.findViewById(R.id.file_list_descripcion)).setText(articulo.getDescripcion());
-                ((TextView)view.findViewById(R.id.file_list_fecha)).setText(articulo.getFecha());
+                ((TextView)view.findViewById(R.id.file_list_fecha)).setText(articulo.getType() +  " - " + getDate(articulo.getFecha()));
                 Drawable mDrawable = Tools.getDrawable(getApplicationContext(), R.drawable.ic_file_download);
                 mDrawable.setBounds( 0, 0, 60, 60 );
                 mDrawable.setTint(Tools.getColor(getApplicationContext(), R.color.black));
                 final Button mDescargar = (Button)view.findViewById(R.id.file_list_download);
                 mDescargar.setCompoundDrawables(mDrawable, null, null, null);
-                final String filename = articulo.getFilename();
+                fileUrl = articulo.getFile();
+                mStorageRef.child(fileUrl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        urlReady = true;
+                        fileUrl = uri.toString();
+                    }
+                });
                 mDescargar.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        beginDownload(filename);
+                        if(urlReady){
+                            beginDownload(fileUrl);
+                        }else{
+                            Toast.makeText(getApplicationContext(), "No se ha podido descargar. Intente de nuevo", Toast.LENGTH_SHORT).show();
+                        }
+
                     }
                 });
             }
         };
         mLista.setAdapter(mAdapter);
 
+    }
+
+    private String getDate(long time) {
+        time = time * -1000;
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(time);
+        String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+        return date;
     }
 
     @Override
@@ -156,7 +157,7 @@ public class ArticulosActivity extends AppCompatActivity {
     }
 
     private void beginDownload(String url) {
-
+        /*
         // Kick off MyDownloadService to download the file
         Intent intent = new Intent(this, DownloadService.class)
                 .putExtra(DownloadService.EXTRA_DOWNLOAD_PATH, url)
@@ -164,7 +165,11 @@ public class ArticulosActivity extends AppCompatActivity {
         startService(intent);
 
         // Show loading spinner
-        showProgressDialog(getString(R.string.progress_downloading));
+        showProgressDialog(getString(R.string.progress_downloading)); */
+
+        Uri uri = Uri.parse(url); // missing 'http://' will cause crashed
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
     }
 
     private void showMessageDialog(String title, String message) {

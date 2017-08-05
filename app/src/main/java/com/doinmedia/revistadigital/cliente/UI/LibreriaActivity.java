@@ -5,26 +5,31 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.doinmedia.revistadigital.cliente.Models.Articulos;
 import com.doinmedia.revistadigital.cliente.R;
 import com.doinmedia.revistadigital.cliente.Services.DownloadService;
 import com.doinmedia.revistadigital.cliente.Tools.Tools;
 import com.firebase.ui.database.FirebaseListAdapter;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 /**
@@ -44,6 +49,9 @@ public class LibreriaActivity extends AppCompatActivity {
 
     private BroadcastReceiver mBroadcastReceiver;
     private ProgressDialog mProgressDialog;
+    private String fileUrl;
+    private StorageReference mStorageRef;
+    private boolean urlReady = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -52,6 +60,7 @@ public class LibreriaActivity extends AppCompatActivity {
 
         mLista = (ListView)findViewById(R.id.file_list_view_2);
         mRef = FirebaseDatabase.getInstance().getReference();
+        mStorageRef = FirebaseStorage.getInstance().getReference();
 
         mBroadcastReceiver = new BroadcastReceiver() {
             @Override
@@ -86,22 +95,42 @@ public class LibreriaActivity extends AppCompatActivity {
             protected void populateView(View view, Articulos articulo, int position) {
                 ((TextView)view.findViewById(R.id.file_list_nombre)).setText(articulo.getNombre());
                 ((TextView)view.findViewById(R.id.file_list_descripcion)).setText(articulo.getDescripcion());
-                ((TextView)view.findViewById(R.id.file_list_fecha)).setText(articulo.getFecha());
+                ((TextView)view.findViewById(R.id.file_list_fecha)).setText(getDate(articulo.getFecha()));
                 Drawable mDrawable = Tools.getDrawable(getApplicationContext(), R.drawable.ic_file_download);
                 mDrawable.setBounds( 0, 0, 60, 60 );
                 mDrawable.setTint(Tools.getColor(getApplicationContext(), R.color.black));
                 final Button mDescargar = (Button)view.findViewById(R.id.file_list_download);
                 mDescargar.setCompoundDrawables(mDrawable, null, null, null);
-                final String filename = articulo.getFilename();
+                fileUrl = articulo.getFile();
+                mStorageRef.child(fileUrl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        urlReady = true;
+                        fileUrl = uri.toString();
+                    }
+                });
                 mDescargar.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        beginDownload(filename);
+                        if(urlReady){
+                            beginDownload(fileUrl);
+                        }else{
+                            Toast.makeText(getApplicationContext(), "No se ha podido descargar. Intente de nuevo", Toast.LENGTH_SHORT).show();
+                        }
+
                     }
                 });
             }
         };
         mLista.setAdapter(mAdapter);
+    }
+
+    private String getDate(long time) {
+        time = time * -1000;
+        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
+        cal.setTimeInMillis(time);
+        String date = DateFormat.format("dd-MM-yyyy", cal).toString();
+        return date;
     }
 
     @Override
@@ -113,13 +142,16 @@ public class LibreriaActivity extends AppCompatActivity {
 
     private void beginDownload(String url) {
         // Kick off MyDownloadService to download the file
-        Intent intent = new Intent(this, DownloadService.class)
+        /*Intent intent = new Intent(this, DownloadService.class)
                 .putExtra(DownloadService.EXTRA_DOWNLOAD_PATH, url)
                 .setAction(DownloadService.ACTION_DOWNLOAD);
         startService(intent);
 
         // Show loading spinner
-        showProgressDialog(getString(R.string.progress_downloading));
+        showProgressDialog(getString(R.string.progress_downloading));*/
+        Uri uri = Uri.parse(url); // missing 'http://' will cause crashed
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(intent);
     }
 
     @Override
