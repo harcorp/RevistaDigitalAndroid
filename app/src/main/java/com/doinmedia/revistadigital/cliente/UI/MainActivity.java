@@ -21,11 +21,13 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 
 import com.doinmedia.revistadigital.cliente.Adapters.PublicacionAdapter;
 import com.doinmedia.revistadigital.cliente.Models.Publicacion;
 import com.doinmedia.revistadigital.cliente.R;
+import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
@@ -33,7 +35,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
 
@@ -158,7 +160,10 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
         } else if(id == R.id.action_logout){
-            signOut();
+            LoginManager.getInstance().logOut();
+            mAuth.signOut();
+            Toast.makeText(mContext, "Cierre de sesión exitoso.", Toast.LENGTH_SHORT).show();
+
         } else if(id == R.id.action_perfil){
             Intent intent = new Intent(MainActivity.this, PerfilActivity.class);
             startActivity(intent);

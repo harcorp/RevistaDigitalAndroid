@@ -2,11 +2,14 @@ package com.doinmedia.revistadigital.cliente.UI;
 
 
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -28,6 +31,8 @@ import com.doinmedia.revistadigital.cliente.Models.Comentario;
 import com.doinmedia.revistadigital.cliente.R;
 import com.doinmedia.revistadigital.cliente.Tools.TextAlert;
 import com.doinmedia.revistadigital.cliente.Tools.VoiceAlert;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -36,8 +41,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.github.yavski.fabspeeddial.FabSpeedDial;
 import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
@@ -46,11 +57,7 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 
-/**
- * Created by davidrodriguez on 4/01/17.
- */
-
-public class ArticuloActivity extends AppCompatActivity {
+public class ArticuloActivity extends BaseActivity {
 
     private static final String TAG = ArticuloActivity.class.getSimpleName();
 
@@ -61,6 +68,7 @@ public class ArticuloActivity extends AppCompatActivity {
 
     private TextView mTitulo, mDescripcion;
     private DatabaseReference mRef;
+    private StorageReference mStorage;
     public static final int RequestPermissionCode = 1;
 
     private RecyclerView mRecycler;
@@ -122,12 +130,15 @@ public class ArticuloActivity extends AppCompatActivity {
                     }
                 }else if(id == R.id.action_video){
                     Toast.makeText(getApplicationContext(), "Video", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
+                    startActivityForResult(intent, 1);
 
                 }
                 return false;
             }
         });
         mAuth = FirebaseAuth.getInstance();
+        mStorage = FirebaseStorage.getInstance().getReference();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
@@ -146,6 +157,42 @@ public class ArticuloActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                String result= data.getStringExtra("result");
+                cargarVideo(result);
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }//onActivityResult
+
+    private void cargarVideo(String filepath){
+        showProgressDialog();
+        Uri file = Uri.fromFile(new File(filepath));
+        final String path = "/videos/" + mKey + "/video" + System.currentTimeMillis() + ".mp4";
+        UploadTask uploadTask = mStorage.child(path).putFile(file);
+
+        uploadTask.addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                hideProgressDialog();
+                Toast.makeText(getApplicationContext(), "No se pudo cargar el video intente de nuevo.", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                cargarDatosVideo(path);
+            }
+        });
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         mAuth.addAuthStateListener(mAuthListener);
@@ -159,6 +206,25 @@ public class ArticuloActivity extends AppCompatActivity {
         Query query = mRef.child("comentarios").child(mKey).orderByChild("aproved").equalTo(true);
         mAdapter = new ComentarioAdapter(getApplicationContext(), query, Comentario.class, mAdapterItems, mAdapterKeys);
         mRecycler.setAdapter(mAdapter);
+    }
+
+    private void cargarDatosVideo(String filename){
+        String key = mRef.child("comentarios/" + mKey).push().getKey();
+        Comentario comentario = new Comentario(mUserUid, filename, null, false, 3);
+        Map<String, Object> postValues = comentario.toMap();
+
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/comentarios/" + mKey + "/" + key, postValues);
+        childUpdates.put("/user-comentarios/" + mUserUid + "/" + mKey + "/" + key, postValues);
+        mRef.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                hideProgressDialog();
+                Toast.makeText(getApplicationContext(),
+                        "Comentario de Video. Subido correctamente. A espera de aprobación",
+                        Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     @Override

@@ -188,7 +188,6 @@ public class VoiceAlert extends DialogFragment {
                 subirAudio(filename);
             }
         });
-
     }
 
     private void subirAudio(String filename){

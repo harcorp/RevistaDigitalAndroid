@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.doinmedia.revistadigital.cliente.Models.Usuario;
 import com.doinmedia.revistadigital.cliente.R;
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -18,6 +19,7 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.auth.api.Auth;
@@ -30,20 +32,25 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = LoginActivity.class.getSimpleName();
     private static final int RC_SIGN_IN = 9001;
 
-    private TextView mRegistrarse, mEstado;
+    private TextView mRegistrarse;
     private EditText mCorreo, mPassword;
     private Button mIngresar;
 
@@ -52,6 +59,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
     private SignInButton mButtonGoogle;
     private LoginButton loginButton;
     private CallbackManager mCallbackManager;
+    private DatabaseReference mRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,10 +73,10 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
         mCorreo = (EditText) findViewById(R.id.login_correo);
         mPassword = (EditText) findViewById(R.id.login_password);
         mIngresar = (Button) findViewById(R.id.login_ingresar);
-        mEstado = (TextView) findViewById(R.id.login_estado);
         mButtonGoogle = (SignInButton) findViewById(R.id.sign_in_button);
 
         mAuth = FirebaseAuth.getInstance();
+        mRef = FirebaseDatabase.getInstance().getReference();
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
@@ -171,9 +179,33 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            finish();
+                                Log.d(TAG, mAuth.getCurrentUser().getUid());
+                                mRef.child("users").child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(DataSnapshot dataSnapshot) {
+                                        if(dataSnapshot.getValue() != null){
+                                            Log.d(TAG, "Existe");
+                                            Toast.makeText(getBaseContext(), "Inicio de sesión exitoso.", Toast.LENGTH_SHORT).show();
+                                            finish();
+                                        }else{
+                                            Log.d(TAG, "No existe");
+                                            Usuario usuario = new Usuario(mAuth.getCurrentUser().getDisplayName(), mAuth.getCurrentUser().getPhotoUrl().toString());
+                                            mRef.child("users").child(mAuth.getCurrentUser().getUid()).setValue(usuario).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                @Override
+                                                public void onSuccess(Void aVoid) {
+                                                    hideProgressDialog();
+                                                    Toast.makeText(LoginActivity.this, "Ingreso existoso.", Toast.LENGTH_SHORT).show();
+                                                    finish();
+                                                }
+                                            });
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(DatabaseError databaseError) {
+
+                                    }
+                                });
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
@@ -182,7 +214,6 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                         }
 
                         // [START_EXCLUDE]
-                        hideProgressDialog();
                         // [END_EXCLUDE]
                     }
                 });
@@ -215,9 +246,6 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                             Toast.LENGTH_SHORT).show();
                 }
 
-                if (!task.isSuccessful()) {
-                    mEstado.setText(R.string.auth_failed);
-                }
                 hideProgressDialog();
             }
         });
@@ -262,6 +290,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                 });
     }
 
+
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         // An unresolvable error has occurred and Google APIs (including Sign-In) will not
@@ -287,19 +316,41 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            finish();
+                            mRef.child("users").child(mAuth.getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    if(dataSnapshot.getValue() != null){
+                                        Log.d(TAG, "Existe");
+                                        hideProgressDialog();
+                                        Toast.makeText(getBaseContext(), "Inicio de sesión exitoso.", Toast.LENGTH_SHORT).show();
+                                        finish();
+                                    }else{
+                                        Log.d(TAG, "No existe");
+                                        Usuario usuario = new Usuario(mAuth.getCurrentUser().getDisplayName(), mAuth.getCurrentUser().getPhotoUrl().toString());
+                                        mRef.child("users").child(mAuth.getCurrentUser().getUid()).setValue(usuario).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                hideProgressDialog();
+                                                Toast.makeText(LoginActivity.this, "Ingreso existoso.", Toast.LENGTH_SHORT).show();
+                                                finish();
+                                            }
+                                        });
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
 
                         } else {
                             // If sign in fails, display a message to the user.
+                            hideProgressDialog();
                             Log.w(TAG, "signInWithCredential:failure", task.getException());
                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
-
-                        // [START_EXCLUDE]
-                        hideProgressDialog();
                         // [END_EXCLUDE]
                     }
                 });

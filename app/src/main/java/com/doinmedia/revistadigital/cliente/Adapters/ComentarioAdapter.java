@@ -1,6 +1,7 @@
 package com.doinmedia.revistadigital.cliente.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import com.doinmedia.revistadigital.cliente.Models.Comentario;
 import com.doinmedia.revistadigital.cliente.R;
 
+import com.doinmedia.revistadigital.cliente.UI.VideoPlayerActivity;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -54,7 +56,7 @@ public class ComentarioAdapter extends FirebaseRecyclerAdapter<ComentarioAdapter
         public TextView mNombreUsuario, mComentarioTexto;
         public LinearLayout mAudio;
         public SeekBar mAudioControl;
-        public Button mAudioPlay, mAudioPause;
+        public Button mAudioPlay, mAudioPause, mVideoPlay;
 
         public ViewHolder(View view){
             super(view);
@@ -65,6 +67,7 @@ public class ComentarioAdapter extends FirebaseRecyclerAdapter<ComentarioAdapter
             mAudioControl = (SeekBar)view.findViewById(R.id.comentario_audio_control);
             mAudioPlay = (Button)view.findViewById(R.id.comentario_audio_play);
             mAudioPause = (Button)view.findViewById(R.id.comentario_audio_pause);
+            mVideoPlay = (Button) view.findViewById(R.id.comentario_video_play);
         }
     }
 
@@ -96,14 +99,21 @@ public class ComentarioAdapter extends FirebaseRecyclerAdapter<ComentarioAdapter
         switch (model.getType()){
             case 1:
                 viewHolder.mAudio.setVisibility(View.GONE);
+                viewHolder.mVideoPlay.setVisibility(View.GONE);
                 viewHolder.mComentarioTexto.setVisibility(View.VISIBLE);
                 viewHolder.mComentarioTexto.setText(model.texto);
                 break;
             case 2:
                 viewHolder.mAudio.setVisibility(View.VISIBLE);
+                viewHolder.mVideoPlay.setVisibility(View.GONE);
                 viewHolder.mComentarioTexto.setText(String.valueOf(model.getType()));
                 controlVoice(viewHolder.mAudioPlay, viewHolder.mAudioPause, viewHolder.mAudioControl, model.file);
                 break;
+            case 3:
+                viewHolder.mComentarioTexto.setVisibility(View.GONE);
+                viewHolder.mAudio.setVisibility(View.GONE);
+                viewHolder.mVideoPlay.setVisibility(View.VISIBLE);
+                controlVideo(viewHolder.mVideoPlay, model.file);
         }
         mRef.child("users/" + model.uid_user + "/nombre").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -138,6 +148,25 @@ public class ComentarioAdapter extends FirebaseRecyclerAdapter<ComentarioAdapter
     @Override
     protected void itemMoved(Comentario item, String key, int oldPosition, int newPosition) {
 
+    }
+
+    private void controlVideo(final Button play, final String file){
+
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                StorageReference mRef = FirebaseStorage.getInstance().getReference();
+                mRef.child(file).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        Intent intent = new Intent(mContext, VideoPlayerActivity.class);
+                        intent.putExtra(VideoPlayerActivity.EXTRA_POST_KEY, uri.toString());
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        mContext.startActivity(intent);
+                    }
+                });
+            }
+        });
     }
 
     private void controlVoice(final Button play, final Button pause, final SeekBar control, final String file){

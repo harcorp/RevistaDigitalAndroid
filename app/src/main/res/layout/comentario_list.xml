@@ -50,4 +50,13 @@
             android:contextClickable="false" />
     </LinearLayout>
 
+    <Button
+        android:id="@+id/comentario_video_play"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:drawableLeft="@drawable/ic_videocam"
+        android:text="Reproducir Video"
+        android:visibility="gone"/>
+
 </LinearLayout>
