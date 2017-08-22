@@ -54,7 +54,6 @@
             android:id="@+id/articulo_card_comments"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"
-            android:layout_gravity="center"
             android:layout_margin="@dimen/card_margin"
             android:elevation="3dp"
             card_view:cardCornerRadius="@dimen/card_radius">

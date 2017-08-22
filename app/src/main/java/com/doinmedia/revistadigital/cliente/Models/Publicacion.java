@@ -7,23 +7,22 @@ import com.google.firebase.database.IgnoreExtraProperties;
 public class Publicacion {
 
     public String titulo;
-    public Integer count;
-    public String fecha;
-    public Integer uid;
+    public Long timestamp;
     public String thumbnail;
     public String descripcion;
+    public String category;
+
 
     public Publicacion(){
 
     }
 
-    public Publicacion(String titulo, Integer count, String fecha, Integer uid, String thumbnail, String descripcion){
+    public Publicacion(String titulo, Long timestamp, String thumbnail, String descripcion, String category){
         this.titulo = titulo;
-        this.count = count;
-        this.fecha = fecha;
-        this.uid = uid;
+        this.timestamp = timestamp;
         this.thumbnail = thumbnail;
         this.descripcion = descripcion;
+        this.category = category;
     }
 
 }

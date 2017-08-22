@@ -13,17 +13,19 @@ public class Articulos {
     private String descripcion;
     private Long fecha;
     private String type;
+    public String fileurl;
 
     public Articulos(){
 
     }
 
-    public Articulos(String file, String nombre, String descripcion, Long fecha, String type){
+    public Articulos(String file, String nombre, String descripcion, Long fecha, String type, String fileurl){
         this.file = file;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fecha = fecha;
         this.type = type;
+        this.fileurl = fileurl;
     }
 
     public String getDescripcion() {

@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:layout_margin="@dimen/card_margin"
+        android:layout_margin="1dp"
         android:elevation="3dp"
         card_view:cardCornerRadius="@dimen/card_radius">
 
@@ -16,20 +16,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
 
-            <ImageView
-                android:id="@+id/pub_thumbnail"
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/pub_slider"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:contentDescription="Caratula" />
+                android:layout_height="210dp" />
 
             <TextView
                 android:id="@+id/pub_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/pub_thumbnail"
+                android:layout_below="@id/pub_slider"
                 android:paddingLeft="@dimen/publicacion_title_padding"
                 android:paddingRight="@dimen/publicacion_title_padding"
                 android:paddingTop="@dimen/publicacion_title_padding"

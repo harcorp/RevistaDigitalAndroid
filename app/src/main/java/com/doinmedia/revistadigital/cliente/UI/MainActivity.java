@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,24 +18,29 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 
+import com.doinmedia.revistadigital.cliente.Adapters.BannerAdapter;
 import com.doinmedia.revistadigital.cliente.Adapters.PublicacionAdapter;
+import com.doinmedia.revistadigital.cliente.Models.Banner;
 import com.doinmedia.revistadigital.cliente.Models.Publicacion;
 import com.doinmedia.revistadigital.cliente.R;
 import com.facebook.login.LoginManager;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -47,12 +54,17 @@ public class MainActivity extends BaseActivity
     private ArrayList<Publicacion> mAdapterItems;
     private ArrayList<String> mAdapterKeys;
     public Context mContext;
-    private ProgressBar mProgress;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser mUser;
     private Menu menu;
+
+    private ViewPager mViewPager;
+    private ArrayList<String> imagesArray = new ArrayList<String>();
+    private int bannerCount = 0;
+    private int currentPage = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,9 +85,27 @@ public class MainActivity extends BaseActivity
         navigationView.setNavigationItemSelectedListener(this);
         mRef = FirebaseDatabase.getInstance().getReference();
         mContext = this.getApplicationContext();
-        mProgress = (ProgressBar) findViewById(R.id.load_publicaciones);
-        mProgress.setVisibility(View.VISIBLE);
+        mViewPager = (ViewPager) findViewById(R.id.banners_inicio);
         setupRecyclerView();
+
+        mRef.child("banners").orderByChild("type").equalTo("2").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data: dataSnapshot.getChildren()){
+                    bannerCount += 1;
+                    Banner banner = data.getValue(Banner.class);
+                    imagesArray.add(banner.image);
+                    if( bannerCount == dataSnapshot.getChildrenCount()){
+                        iniciarSliders();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -92,6 +122,28 @@ public class MainActivity extends BaseActivity
         };
     }
 
+    private void iniciarSliders(){
+        mViewPager.setAdapter(new BannerAdapter(MainActivity.this,imagesArray));
+
+        // Auto start of viewpager
+        final Handler handler = new Handler();
+        final Runnable Update = new Runnable() {
+            public void run() {
+                if (currentPage == bannerCount) {
+                    currentPage = 0;
+                }
+                mViewPager.setCurrentItem(currentPage++, true);
+            }
+        };
+        Timer swipeTimer = new Timer();
+        swipeTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(Update);
+            }
+        }, 3500, 3500);
+    }
+
     public void setupRecyclerView(){
         recycler = (RecyclerView) findViewById(R.id.reciclador_publicaciones);
         recycler.setHasFixedSize(true);
@@ -102,7 +154,6 @@ public class MainActivity extends BaseActivity
         mAdapter = new PublicacionAdapter(getApplicationContext(), mRef.child("publicaciones/"), Publicacion.class, mAdapterItems, mAdapterKeys);
         recycler.setAdapter(mAdapter);
         recycler.setVisibility(View.VISIBLE);
-        mProgress.setVisibility(View.GONE);
 
     }
 

@@ -2,46 +2,55 @@ package com.doinmedia.revistadigital.cliente.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
 import com.doinmedia.revistadigital.cliente.Models.Publicacion;
 import com.doinmedia.revistadigital.cliente.R;
-import com.doinmedia.revistadigital.cliente.Tools.FirebaseImageLoader;
 import com.doinmedia.revistadigital.cliente.UI.PublicacionActivity;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
-/**
- * Created by davidrodriguez on 27/12/16.
- */
 
 public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapter.ViewHolder, Publicacion> {
 
+
+    public static final String TAG = "PublicacionAdapter";
+
     private Context mContext;
+    private ViewPager mViewPager;
+    private int currentPage, bannerCount = 0;
+    private ArrayList<String> imagesArray = new ArrayList<String>();
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
 
         public CardView cv;
         public TextView title, count;
-        public ImageView thumbnail;
+        public ViewPager viewPager;
 
         public ViewHolder(View itemView) {
             super(itemView);
             cv = (CardView) itemView.findViewById(R.id.pub_card_view);
             title = (TextView) itemView.findViewById(R.id.pub_title);
             count = (TextView) itemView.findViewById(R.id.pub_count);
-            thumbnail = (ImageView) itemView.findViewById(R.id.pub_thumbnail);
+            viewPager = (ViewPager) itemView.findViewById(R.id.pub_slider);
 
         }
     }
@@ -63,22 +72,37 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
 
     @Override
     public void onBindViewHolder(final PublicacionAdapter.ViewHolder viewHolder, final int position) {
+        mViewPager = viewHolder.viewPager;
         Publicacion model = getItem(position);
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child(model.thumbnail);
-        viewHolder.title.setText(model.titulo);
-        viewHolder.count.setText("Articulos: " + model.count.toString());
-        Glide.with(mContext)
-                .using(new FirebaseImageLoader())
-                .load(ref)
-                .fitCenter()
-                .placeholder(R.drawable.spinner_animation)
-                .into(viewHolder.thumbnail);
-
         final String key = getKey(position);
-        final String title = model.titulo;
-        viewHolder.thumbnail.setOnClickListener(new View.OnClickListener(){
+        DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("articulos").child(key);
+
+        mRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onClick(View v){
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for(DataSnapshot data: dataSnapshot.getChildren()){
+                    bannerCount += 1;
+                    Publicacion publicacion = data.getValue(Publicacion.class);
+                    imagesArray.add(publicacion.thumbnail);
+                    if( bannerCount == dataSnapshot.getChildrenCount()){
+                        iniciarSliders(viewHolder, position);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        viewHolder.title.setText(model.titulo);
+        viewHolder.count.setText(model.descripcion);
+
+        final String title = model.titulo;
+
+        viewHolder.cv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 Context c = v.getContext();
                 Intent intent = new Intent(c, PublicacionActivity.class);
                 intent.putExtra(PublicacionActivity.EXTRA_POST_KEY, key);
@@ -86,10 +110,11 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
                 c.startActivity(intent);
             }
         });
-        viewHolder.cv.setOnClickListener(new View.OnClickListener() {
+
+        viewHolder.viewPager.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Context c = v.getContext();
+            public void onClick(View view) {
+                Context c = view.getContext();
                 Intent intent = new Intent(c, PublicacionActivity.class);
                 intent.putExtra(PublicacionActivity.EXTRA_POST_KEY, key);
                 intent.putExtra(PublicacionActivity.EXTRA_POST_TITLE, title);
@@ -116,5 +141,28 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
     @Override
     protected void itemMoved(Publicacion item, String key, int oldPosition, int newPosition) {
 
+    }
+
+    private void iniciarSliders(ViewHolder viewHolder, int position){
+        ImgPubAdapter adapter = new ImgPubAdapter(this.mContext, imagesArray);
+        viewHolder.viewPager.setAdapter(adapter);
+
+        // Auto start of viewpager
+        final Handler handler = new Handler();
+        final Runnable Update = new Runnable() {
+            public void run() {
+                if (currentPage == bannerCount) {
+                    currentPage = 0;
+                }
+                mViewPager.setCurrentItem(currentPage++, true);
+            }
+        };
+        Timer swipeTimer = new Timer();
+        swipeTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(Update);
+            }
+        }, 3500, 3500);
     }
 }

@@ -49,7 +49,6 @@ public class LibreriaActivity extends AppCompatActivity {
 
     private BroadcastReceiver mBroadcastReceiver;
     private ProgressDialog mProgressDialog;
-    private String fileUrl;
     private StorageReference mStorageRef;
     private boolean urlReady = false;
 
@@ -92,7 +91,7 @@ public class LibreriaActivity extends AppCompatActivity {
 
         mAdapter = new FirebaseListAdapter<Articulos>(this, Articulos.class, R.layout.file_list, mRef.child("biblioteca_libreria")) {
             @Override
-            protected void populateView(View view, Articulos articulo, int position) {
+            protected void populateView(View view, final Articulos articulo, int position) {
                 ((TextView)view.findViewById(R.id.file_list_nombre)).setText(articulo.getNombre());
                 ((TextView)view.findViewById(R.id.file_list_descripcion)).setText(articulo.getDescripcion());
                 ((TextView)view.findViewById(R.id.file_list_fecha)).setText(getDate(articulo.getFecha()));
@@ -101,19 +100,19 @@ public class LibreriaActivity extends AppCompatActivity {
                 mDrawable.setTint(Tools.getColor(getApplicationContext(), R.color.black));
                 final Button mDescargar = (Button)view.findViewById(R.id.file_list_download);
                 mDescargar.setCompoundDrawables(mDrawable, null, null, null);
-                fileUrl = articulo.getFile();
-                mStorageRef.child(fileUrl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                articulo.fileurl = articulo.getFile();
+                mStorageRef.child(articulo.fileurl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                     @Override
                     public void onSuccess(Uri uri) {
                         urlReady = true;
-                        fileUrl = uri.toString();
+                        articulo.fileurl = uri.toString();
                     }
                 });
                 mDescargar.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         if(urlReady){
-                            beginDownload(fileUrl);
+                            beginDownload(articulo.fileurl);
                         }else{
                             Toast.makeText(getApplicationContext(), "No se ha podido descargar. Intente de nuevo", Toast.LENGTH_SHORT).show();
                         }
