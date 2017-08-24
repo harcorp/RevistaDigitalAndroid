@@ -29,6 +29,7 @@ import com.doinmedia.revistadigital.cliente.Fragments.YoutubeFragment;
 import com.doinmedia.revistadigital.cliente.Models.Articulo;
 import com.doinmedia.revistadigital.cliente.Models.Comentario;
 import com.doinmedia.revistadigital.cliente.R;
+import com.doinmedia.revistadigital.cliente.Tools.CustomLinearLayout;
 import com.doinmedia.revistadigital.cliente.Tools.TextAlert;
 import com.doinmedia.revistadigital.cliente.Tools.VoiceAlert;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -200,9 +201,9 @@ public class ArticuloActivity extends BaseActivity {
 
     private void configurarRecycler(){
         mRecycler = (RecyclerView) findViewById(R.id.comentario_recycler);
-        mRecycler.setHasFixedSize(true);
-        mRecycler.setLayoutManager(new LinearLayoutManager(this));
-        mRecycler.addItemDecoration(new SimpleDividerItemDecoration(this));
+        //mRecycler.setHasFixedSize(true);
+        mRecycler.setLayoutManager(new CustomLinearLayout(this));
+        //mRecycler.addItemDecoration(new SimpleDividerItemDecoration(this));
         Query query = mRef.child("comentarios").child(mKey).orderByChild("aproved").equalTo(true);
         mAdapter = new ComentarioAdapter(getApplicationContext(), query, Comentario.class, mAdapterItems, mAdapterKeys);
         mRecycler.setAdapter(mAdapter);

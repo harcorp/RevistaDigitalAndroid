@@ -4,9 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.media.AudioManager;
+import android.media.Image;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -21,15 +26,24 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.Toast;
 
 
+import com.bumptech.glide.Glide;
 import com.doinmedia.revistadigital.cliente.Adapters.BannerAdapter;
 import com.doinmedia.revistadigital.cliente.Adapters.PublicacionAdapter;
+import com.doinmedia.revistadigital.cliente.Fragments.YoutubeFragment;
 import com.doinmedia.revistadigital.cliente.Models.Banner;
+import com.doinmedia.revistadigital.cliente.Models.Dato;
 import com.doinmedia.revistadigital.cliente.Models.Publicacion;
 import com.doinmedia.revistadigital.cliente.R;
+import com.doinmedia.revistadigital.cliente.Tools.FirebaseImageLoader;
 import com.facebook.login.LoginManager;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -37,7 +51,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,7 +70,12 @@ public class MainActivity extends BaseActivity
     private PublicacionAdapter mAdapter;
     private ArrayList<Publicacion> mAdapterItems;
     private ArrayList<String> mAdapterKeys;
+    private ImageView mImagenInicio;
+    private Button mPlay, mStop;
+    private SeekBar mSeek;
     public Context mContext;
+    private MediaPlayer mMediaPlayer;
+    private Boolean mIsPrepared = false;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -61,8 +83,9 @@ public class MainActivity extends BaseActivity
     private Menu menu;
 
     private ViewPager mViewPager;
-    private ArrayList<String> imagesArray = new ArrayList<String>();
     private int bannerCount = 0;
+    private ArrayList<String> imagesArray = new ArrayList<String>();
+    private ArrayList<String> linksArray = new ArrayList<String>();
     private int currentPage = 0;
 
 
@@ -86,7 +109,34 @@ public class MainActivity extends BaseActivity
         mRef = FirebaseDatabase.getInstance().getReference();
         mContext = this.getApplicationContext();
         mViewPager = (ViewPager) findViewById(R.id.banners_inicio);
+        mImagenInicio = (ImageView) findViewById(R.id.inicio_imagen);
+        mSeek = (SeekBar) findViewById(R.id.inicio_audio_seek);
+        mPlay = (Button) findViewById(R.id.inicio_audio_play);
+        mStop = (Button) findViewById(R.id.inicio_audio_pause);
+
         setupRecyclerView();
+
+        mRef.child("datos").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Dato dato = dataSnapshot.getValue(Dato.class);
+                cargar_video(dato.videoId);
+                controlVoice(dato.audio);
+                StorageReference ref = FirebaseStorage.getInstance().getReference().child(dato.imagen);
+
+                Glide.with(mContext)
+                        .using(new FirebaseImageLoader())
+                        .load(ref)
+                        .fitCenter()
+                        .placeholder(R.drawable.spinner_animation)
+                        .into(mImagenInicio);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         mRef.child("banners").orderByChild("type").equalTo("2").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -95,6 +145,7 @@ public class MainActivity extends BaseActivity
                     bannerCount += 1;
                     Banner banner = data.getValue(Banner.class);
                     imagesArray.add(banner.image);
+                    linksArray.add(banner.link);
                     if( bannerCount == dataSnapshot.getChildrenCount()){
                         iniciarSliders();
                     }
@@ -122,8 +173,20 @@ public class MainActivity extends BaseActivity
         };
     }
 
+    private void cargar_video(String id){
+        Bundle args = new Bundle();
+        args.putString("video_id", id);
+        YoutubeFragment fragment = new YoutubeFragment();
+        fragment.setArguments(args);
+        FragmentManager manager = getSupportFragmentManager();
+        manager.beginTransaction()
+                .replace(R.id.inicio_video, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
     private void iniciarSliders(){
-        mViewPager.setAdapter(new BannerAdapter(MainActivity.this,imagesArray));
+        mViewPager.setAdapter(new BannerAdapter(MainActivity.this,imagesArray, linksArray));
 
         // Auto start of viewpager
         final Handler handler = new Handler();
@@ -300,6 +363,108 @@ public class MainActivity extends BaseActivity
     protected void onDestroy() {
         super.onDestroy();
         mAdapter.destroy();
+    }
+
+    private void controlVoice(final String file){
+        final StorageReference mRef = FirebaseStorage.getInstance().getReference();
+        mPlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mPlay.setVisibility(View.GONE);
+                mStop.setVisibility(View.VISIBLE);
+                final MediaPlayer.OnPreparedListener mPreparedListener = new MediaPlayer.OnPreparedListener() {
+                    public void onPrepared(MediaPlayer mp) {
+                        // briefly show the mediacontroller
+                        final Handler seekHandler = new Handler();
+                        Runnable updateSeekBar = new Runnable() {
+                            public void run() {
+                                if(mMediaPlayer != null){
+                                    long totalDuration = mMediaPlayer.getDuration();
+                                    long currentDuration = mMediaPlayer.getCurrentPosition();
+
+                                    // Displaying Total Duration time
+                                    //remaining.setText(""+ milliSecondsToTimer(totalDuration-currentDuration));
+                                    // Displaying time completed playing
+                                    //elapsed.setText(""+ milliSecondsToTimer(currentDuration));
+
+                                    // Updating progress bar
+                                    mSeek.setProgress((int)currentDuration);
+
+                                    // Call this thread again after 15 milliseconds => ~ 1000/60fps
+                                    seekHandler.postDelayed(this, 15);
+                                    if(!mMediaPlayer.isPlaying()){
+                                        seekHandler.removeCallbacks(this);
+                                        mSeek.setProgress(0);
+                                        mStop.setVisibility(View.GONE);
+                                        mPlay.setVisibility(View.VISIBLE);
+                                    }
+                                }
+
+
+
+                            }
+                        };
+
+                        try{
+                            mIsPrepared = true;
+                            mMediaPlayer.start();
+                            mSeek.setMax(mMediaPlayer.getDuration());
+                            // Updating progress bar
+                            seekHandler.postDelayed(updateSeekBar, 15);
+                        } catch (IllegalArgumentException e) {
+                            e.printStackTrace();
+                        } catch (IllegalStateException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                mRef.child(file).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        if (mMediaPlayer != null) {
+                            mMediaPlayer.reset();
+                            mMediaPlayer.release();
+                            mMediaPlayer = null;
+                        }
+                        try {
+                            mMediaPlayer = new MediaPlayer();
+                            mMediaPlayer.setOnPreparedListener(mPreparedListener);
+                            mIsPrepared = false;
+                            mMediaPlayer.setDataSource(uri.toString());
+                            mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                            mMediaPlayer.prepareAsync();
+                        } catch (IOException ex) {
+                            Log.w("MyAudioView", "Unable to open content: " + uri, ex);
+                            return;
+                        } catch (IllegalArgumentException ex) {
+                            Log.w("MyAudioView", "Unable to open content: " + uri, ex);
+                            return;
+                        }
+                    }
+                }).addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.i("TAG", e.getMessage());
+                    }
+                });
+
+            }
+        });
+
+        mStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mStop.setVisibility(View.GONE);
+                mPlay.setVisibility(View.VISIBLE);
+
+                if (mMediaPlayer != null) {
+                    mMediaPlayer.pause();
+                    //mMediaPlayer.release();
+                    //mMediaPlayer = null;
+                }
+
+            }
+        });
     }
 
     private void signOut() {

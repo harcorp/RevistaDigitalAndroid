@@ -1,6 +1,8 @@
 package com.doinmedia.revistadigital.cliente.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,13 +26,14 @@ public class BannerAdapter extends PagerAdapter {
 
     public static final String TAG = "BannerAdapter";
 
-    private ArrayList<String> images;
     private LayoutInflater inflater;
+    private ArrayList<String> images, links;
     private Context context;
 
-    public BannerAdapter(Context context, ArrayList<String> images) {
+    public BannerAdapter(Context context, ArrayList<String> images, ArrayList<String> links) {
         this.context = context;
         this.images = images;
+        this.links = links;
         inflater = LayoutInflater.from(context);
     }
 
@@ -47,10 +50,18 @@ public class BannerAdapter extends PagerAdapter {
     @Override
     public Object instantiateItem(ViewGroup view, int position) {
         View myImageLayout = inflater.inflate(R.layout.slider, view, false);
+        final String link = this.links.get(position);
         ImageView myImage = (ImageView) myImageLayout
                 .findViewById(R.id.image_banner);
         StorageReference ref = FirebaseStorage.getInstance().getReference().child(images.get(position));
-
+        myImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Uri uri = Uri.parse(link); // missing 'http://' will cause crashed
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                context.startActivity(intent);
+            }
+        });
         Glide.with(context)
                 .using(new FirebaseImageLoader())
                 .load(ref)

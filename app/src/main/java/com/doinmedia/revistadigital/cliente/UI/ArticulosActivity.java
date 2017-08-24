@@ -1,52 +1,34 @@
 package com.doinmedia.revistadigital.cliente.UI;
 
-import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.format.DateFormat;
-import android.util.Log;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
+import com.doinmedia.revistadigital.cliente.Adapters.LibreriaAdapter;
 import com.doinmedia.revistadigital.cliente.Models.Articulos;
 import com.doinmedia.revistadigital.cliente.R;
-import com.doinmedia.revistadigital.cliente.Services.DownloadService;
-import com.doinmedia.revistadigital.cliente.Tools.Tools;
-import com.firebase.ui.database.FirebaseListAdapter;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.ArrayList;
 
 public class ArticulosActivity extends AppCompatActivity {
 
     public static final String TAG = ArticulosActivity.class.getSimpleName();
 
-    private ListView mLista;
+    private RecyclerView mReciclador;
     private DatabaseReference mRef;
-    private StorageReference mStorageRef;
-    private FirebaseListAdapter<Articulos> mAdapter;
+    private LibreriaAdapter mAdapter;
 
-    private static final String KEY_FILE_URI = "key_file_uri";
-    private static final String KEY_DOWNLOAD_URL = "key_download_url";
 
-    private BroadcastReceiver mBroadcastReceiver;
-    private ProgressDialog mProgressDialog;
-    private boolean urlReady = false;
+    private ArrayList<Articulos> mAdapterItems;
+    private ArrayList<String> mAdapterKeys;
 
 
     @Override
@@ -54,143 +36,76 @@ public class ArticulosActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_articulos);
 
-        mLista = (ListView)findViewById(R.id.file_list_view);
+        mReciclador = (RecyclerView)findViewById(R.id.reciclador_articulos);
         mRef = FirebaseDatabase.getInstance().getReference();
-        mStorageRef = FirebaseStorage.getInstance().getReference();
+        mReciclador.setHasFixedSize(true);
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
+        mReciclador.setLayoutManager(mLayoutManager);
+        mReciclador.addItemDecoration(new ArticulosActivity.GridSpacingItemDecoration(2, dpToPx(5), true));
+        mReciclador.setItemAnimator(new DefaultItemAnimator());
+        mAdapter = new LibreriaAdapter(getApplicationContext(),
+                mRef.child("biblioteca_articulos"),
+                Articulos.class,
+                mAdapterItems, mAdapterKeys);
 
-        mBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                Log.d(TAG, "onReceive:" + intent);
-                hideProgressDialog();
-
-                switch (intent.getAction()) {
-                    case DownloadService.DOWNLOAD_COMPLETED:
-                        // Get number of bytes downloaded
-                        long numBytes = intent.getLongExtra(DownloadService.EXTRA_BYTES_DOWNLOADED, 0);
-
-                        // Alert success
-                        showMessageDialog(getString(R.string.success), String.format(Locale.getDefault(),
-                                "%d bytes downloaded from %s",
-                                numBytes,
-                                intent.getStringExtra(DownloadService.EXTRA_DOWNLOAD_PATH)));
-                        break;
-                    case DownloadService.DOWNLOAD_ERROR:
-                        // Alert failure
-                        showMessageDialog("Error", String.format(Locale.getDefault(),
-                                "Failed to download from %s",
-                                intent.getStringExtra(DownloadService.EXTRA_DOWNLOAD_PATH)));
-                        break;
-                }
-            }
-
-        };
-
-        mAdapter = new FirebaseListAdapter<Articulos>(this, Articulos.class, R.layout.file_list, mRef.child("biblioteca_articulos")) {
-            @Override
-            protected void populateView(View view, final Articulos articulo, int position) {
-                ((TextView)view.findViewById(R.id.file_list_nombre)).setText(articulo.getNombre());
-                ((TextView)view.findViewById(R.id.file_list_descripcion)).setText(articulo.getDescripcion());
-                ((TextView)view.findViewById(R.id.file_list_fecha)).setText(articulo.getType() +  " - " + getDate(articulo.getFecha()));
-                Drawable mDrawable = Tools.getDrawable(getApplicationContext(), R.drawable.ic_file_download);
-                mDrawable.setBounds( 0, 0, 60, 60 );
-                mDrawable.setTint(Tools.getColor(getApplicationContext(), R.color.black));
-                final Button mDescargar = (Button)view.findViewById(R.id.file_list_download);
-                mDescargar.setCompoundDrawables(mDrawable, null, null, null);
-                articulo.fileurl = articulo.getFile();
-                mStorageRef.child(articulo.fileurl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        urlReady = true;
-                        articulo.fileurl = uri.toString();
-                    }
-                });
-                mDescargar.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(urlReady){
-                            beginDownload(articulo.fileurl);
-                        }else{
-                            Toast.makeText(getApplicationContext(), "No se ha podido descargar. Intente de nuevo", Toast.LENGTH_SHORT).show();
-                        }
-
-                    }
-                });
-            }
-        };
-        mLista.setAdapter(mAdapter);
+        mReciclador.setAdapter(mAdapter);
 
     }
 
-    private String getDate(long time) {
-        time = time * -1000;
-        Calendar cal = Calendar.getInstance(Locale.ENGLISH);
-        cal.setTimeInMillis(time);
-        String date = DateFormat.format("dd-MM-yyyy", cal).toString();
-        return date;
+    private int dpToPx(int dp) {
+        Resources r = getResources();
+        return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
+    }
+
+    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
+
+        private int spanCount;
+        private int spacing;
+        private boolean includeEdge;
+
+        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
+            this.spanCount = spanCount;
+            this.spacing = spacing;
+            this.includeEdge = includeEdge;
+        }
+
+        @Override
+        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
+            int position = parent.getChildAdapterPosition(view); // item position
+            int column = position % spanCount; // item column
+
+            if (includeEdge) {
+                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
+                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
+
+                if (position < spanCount) { // top edge
+                    outRect.top = spacing;
+                }
+                outRect.bottom = spacing; // item bottom
+            } else {
+                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
+                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
+                if (position >= spanCount) {
+                    outRect.top = spacing; // item top
+                }
+            }
+        }
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
-        // Register receiver for uploads and downloads
-        LocalBroadcastManager manager = LocalBroadcastManager.getInstance(this);
-        manager.registerReceiver(mBroadcastReceiver, DownloadService.getIntentFilter());
     }
 
     @Override
     public void onStop() {
         super.onStop();
 
-        // Unregister download receiver
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mAdapter.cleanup();
-    }
-
-    private void beginDownload(String url) {
-        /*
-        // Kick off MyDownloadService to download the file
-        Intent intent = new Intent(this, DownloadService.class)
-                .putExtra(DownloadService.EXTRA_DOWNLOAD_PATH, url)
-                .setAction(DownloadService.ACTION_DOWNLOAD);
-        startService(intent);
-
-        // Show loading spinner
-        showProgressDialog(getString(R.string.progress_downloading)); */
-        Log.d(TAG, url);
-        Uri uri = Uri.parse(url); // missing 'http://' will cause crashed
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        startActivity(intent);
-    }
-
-    private void showMessageDialog(String title, String message) {
-        AlertDialog ad = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .create();
-        ad.show();
-    }
-
-    private void showProgressDialog(String caption) {
-        if (mProgressDialog == null) {
-            mProgressDialog = new ProgressDialog(this);
-            mProgressDialog.setIndeterminate(true);
-        }
-
-        mProgressDialog.setMessage(caption);
-        mProgressDialog.show();
-    }
-
-    private void hideProgressDialog() {
-        if (mProgressDialog != null && mProgressDialog.isShowing()) {
-            mProgressDialog.dismiss();
-        }
     }
 
 }

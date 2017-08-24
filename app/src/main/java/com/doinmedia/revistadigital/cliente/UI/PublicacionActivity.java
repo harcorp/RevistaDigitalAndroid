@@ -48,8 +48,6 @@ public class PublicacionActivity extends AppCompatActivity {
     private ProgressBar mProgress;
     private ArticulosAdapter mAdapter;
     private DatabaseReference mRef;
-    private Context mContext;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState){

@@ -2,17 +2,16 @@ package com.doinmedia.revistadigital.cliente.UI;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.afollestad.easyvideoplayer.EasyVideoCallback;
 import com.afollestad.easyvideoplayer.EasyVideoPlayer;
 import com.doinmedia.revistadigital.cliente.R;
 
-import fm.jiecao.jcvideoplayer_lib.JCVideoPlayer;
-import fm.jiecao.jcvideoplayer_lib.JCVideoPlayerStandard;
-
 public class VideoPlayerActivity extends Activity implements EasyVideoCallback {
+
+    public static final String TAG = VideoPlayerActivity.class.getSimpleName();
 
     public static final String EXTRA_POST_KEY = "post_key";
     private String mUrl;
@@ -24,6 +23,8 @@ public class VideoPlayerActivity extends Activity implements EasyVideoCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
         mUrl = getIntent().getStringExtra(EXTRA_POST_KEY);
+
+        Log.d(TAG, mUrl);
 
         // Grabs a reference to the player view
         player = (EasyVideoPlayer) findViewById(R.id.player);
