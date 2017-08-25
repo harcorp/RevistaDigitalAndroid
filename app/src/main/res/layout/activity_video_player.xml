@@ -4,8 +4,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:background="@color/black">
 
-    <com.afollestad.easyvideoplayer.EasyVideoPlayer xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/player"
+    <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+        android:id="@+id/player_view"
+        android:focusable="true"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
 </RelativeLayout>
