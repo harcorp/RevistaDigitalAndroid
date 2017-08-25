@@ -75,6 +75,7 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
         mViewPager = viewHolder.viewPager;
         Publicacion model = getItem(position);
         final String key = getKey(position);
+        final String title = model.titulo;
         DatabaseReference mRef = FirebaseDatabase.getInstance().getReference().child("articulos").child(key);
 
         mRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -85,7 +86,7 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
                     Publicacion publicacion = data.getValue(Publicacion.class);
                     imagesArray.add(publicacion.thumbnail);
                     if( bannerCount == dataSnapshot.getChildrenCount()){
-                        iniciarSliders(viewHolder, position);
+                        iniciarSliders(viewHolder, position, key, title);
                     }
                 }
             }
@@ -98,7 +99,6 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
         viewHolder.title.setText(model.titulo);
         viewHolder.count.setText(model.descripcion);
 
-        final String title = model.titulo;
 
         viewHolder.cv.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -143,8 +143,8 @@ public class PublicacionAdapter extends FirebaseRecyclerAdapter<PublicacionAdapt
 
     }
 
-    private void iniciarSliders(ViewHolder viewHolder, int position){
-        ImgPubAdapter adapter = new ImgPubAdapter(this.mContext, imagesArray);
+    private void iniciarSliders(ViewHolder viewHolder, int position, String key, String title){
+        ImgPubAdapter adapter = new ImgPubAdapter(this.mContext, imagesArray, title, key);
         viewHolder.viewPager.setAdapter(adapter);
 
         // Auto start of viewpager

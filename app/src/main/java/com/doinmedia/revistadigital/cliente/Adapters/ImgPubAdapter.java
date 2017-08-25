@@ -1,6 +1,7 @@
 package com.doinmedia.revistadigital.cliente.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.view.PagerAdapter;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,8 @@ import android.widget.RelativeLayout;
 import com.bumptech.glide.Glide;
 import com.doinmedia.revistadigital.cliente.R;
 import com.doinmedia.revistadigital.cliente.Tools.FirebaseImageLoader;
+import com.doinmedia.revistadigital.cliente.UI.ArticulosActivity;
+import com.doinmedia.revistadigital.cliente.UI.PublicacionActivity;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -26,10 +29,13 @@ public class ImgPubAdapter extends PagerAdapter {
     private ArrayList<String> images;
     private LayoutInflater inflater;
     private Context context;
+    private String key, title;
 
-    public ImgPubAdapter(Context context, ArrayList<String> images) {
+    public ImgPubAdapter(Context context, ArrayList<String> images, String title, String key) {
         this.context = context;
         this.images = images;
+        this.title = title;
+        this.key = key;
         this.inflater = LayoutInflater.from(context);
     }
 
@@ -57,6 +63,16 @@ public class ImgPubAdapter extends PagerAdapter {
                 .fitCenter()
                 .into(myImage);
 
+        myImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(context, PublicacionActivity.class);
+                intent.putExtra(PublicacionActivity.EXTRA_POST_KEY, key);
+                intent.putExtra(PublicacionActivity.EXTRA_POST_TITLE, title);
+                intent.setFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
+        });
 
         view.addView(layout, 0);
         return layout;

@@ -470,4 +470,10 @@ public class MainActivity extends BaseActivity
     private void signOut() {
         mAuth.signOut();
     }
+
+    @Override
+    public void onStop(){
+        super.onStop();
+
+    }
 }
