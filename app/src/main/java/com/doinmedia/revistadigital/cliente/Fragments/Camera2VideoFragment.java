@@ -86,10 +86,9 @@ public class Camera2VideoFragment extends Fragment
         INVERSE_ORIENTATIONS.append(Surface.ROTATION_270, 0);
     }
 
-    private static final int MAX_VIDEO_DURATION = 15 * 1000;
+    private static final int MAX_VIDEO_DURATION = 60 * 1000;
     private static final int ID_TIME_COUNT = 0x1006;
 
-    private TextView mContadorVideo;
     /**
      * An {@link AutoFitTextureView} for camera preview.
      */
@@ -227,7 +226,7 @@ public class Camera2VideoFragment extends Fragment
      */
     private static Size chooseVideoSize(Size[] choices) {
         for (Size size : choices) {
-            if (size.getWidth() == size.getHeight() * 4 / 4 && size.getWidth() <= 240) {
+            if (size.getWidth() == size.getHeight() * 4 / 3 && size.getWidth() <= 240) {
                 return size;
             }
         }
@@ -277,7 +276,6 @@ public class Camera2VideoFragment extends Fragment
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         mTextureView = (AutoFitTextureView) view.findViewById(R.id.texture);
         mButtonVideo = (Button) view.findViewById(R.id.video);
-        mContadorVideo = (TextView) view.findViewById(R.id.duration_video);
         mButtonVideo.setOnClickListener(this);
         view.findViewById(R.id.info).setOnClickListener(this);
     }
@@ -448,7 +446,7 @@ public class Camera2VideoFragment extends Fragment
             mMediaRecorder = new MediaRecorder();
             manager.openCamera(cameraId, mStateCallback, null);
         } catch (CameraAccessException e) {
-            Toast.makeText(activity, "Cannot access the camera.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(activity, "No podemos acceder a la camara", Toast.LENGTH_SHORT).show();
             activity.finish();
         } catch (NullPointerException e) {
             // Currently an NPE is thrown when the Camera2API is used but not supported on the
@@ -509,7 +507,7 @@ public class Camera2VideoFragment extends Fragment
                         public void onConfigureFailed(@NonNull CameraCaptureSession session) {
                             Activity activity = getActivity();
                             if (null != activity) {
-                                Toast.makeText(activity, "Failed", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(activity, "Fallo", Toast.LENGTH_SHORT).show();
                             }
                         }
                     }, mBackgroundHandler);
@@ -646,8 +644,6 @@ public class Camera2VideoFragment extends Fragment
                             // Start recording
                             mMediaRecorder.start();
 
-                            mContadorVideo.setVisibility(View.VISIBLE);
-                            mContadorVideo.setText("00:0" + (MAX_VIDEO_DURATION / 1000));
                             Message msg = mHandler.obtainMessage(ID_TIME_COUNT, 1,
                                     MAX_VIDEO_DURATION / 1000);
                             mHandler.sendMessage(msg);
@@ -678,10 +674,8 @@ public class Camera2VideoFragment extends Fragment
                     if (mIsRecordingVideo) {
                         if (msg.arg1 > msg.arg2) {
                             // mTvTimeCount.setVisibility(View.INVISIBLE);
-                            mContadorVideo.setText("00:00");
                             stopRecordingVideo();
                         } else {
-                            mContadorVideo.setText("00:0" + (msg.arg2 - msg.arg1));
                             Message msg2 = mHandler.obtainMessage(ID_TIME_COUNT,
                                     msg.arg1 + 1, msg.arg2);
                             mHandler.sendMessageDelayed(msg2, 1000);
@@ -725,17 +719,12 @@ public class Camera2VideoFragment extends Fragment
 
         Activity activity = getActivity();
         if (null != activity) {
-            Toast.makeText(activity, "Video saved: " + mNextVideoAbsolutePath,
-                    Toast.LENGTH_SHORT).show();
-            Log.d(TAG, "Video saved: " + mNextVideoAbsolutePath);
+            Intent returnIntent = new Intent();
+            returnIntent.putExtra("result", mNextVideoAbsolutePath);
+            getActivity().setResult(Activity.RESULT_OK,returnIntent);
+            getActivity().finish();
         }
-        Intent returnIntent = new Intent();
-        returnIntent.putExtra("result", mNextVideoAbsolutePath);
-        getActivity().setResult(Activity.RESULT_OK,returnIntent);
-        getActivity().finish();
         mNextVideoAbsolutePath = null;
-        //startPreview();
-        getActivity().finish();
     }
 
     /**

@@ -301,9 +301,6 @@ public class MainActivity extends BaseActivity
         } else if (id == R.id.nav_quienes_somos) {
             Intent intent = new Intent(MainActivity.this, QuienesSomosActivity.class);
             startActivity(intent);
-        } else if (id == R.id.nav_historia) {
-            Intent intent = new Intent(MainActivity.this, HistoriaActivity.class);
-            startActivity(intent);
         } else if (id == R.id.nav_contacto) {
             Intent intent = new Intent(MainActivity.this, ContactoActivity.class);
             startActivity(intent);

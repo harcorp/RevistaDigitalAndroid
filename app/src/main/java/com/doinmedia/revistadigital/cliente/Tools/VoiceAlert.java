@@ -118,8 +118,6 @@ public class VoiceAlert extends DialogFragment {
                     }
 
                     mediaPlayer.start();
-                    Toast.makeText(getActivity(), "Recording Playing",
-                            Toast.LENGTH_LONG).show();
 
             }
         });
@@ -158,11 +156,9 @@ public class VoiceAlert extends DialogFragment {
 
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
-                        Log.i("TAG", "touched down");
                         grabarAudio();
                         break;
                     case MotionEvent.ACTION_UP:
-                        Log.i("TAG", "touched up");
                         pararGrabacion();
                         break;
                 }
@@ -204,6 +200,7 @@ public class VoiceAlert extends DialogFragment {
             public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                 double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                 Log.d(TAG, "Upload is " + progress + "% done");
+                mInfoText.setText("Publicando... " + progress + "%");
             }
         }).addOnPausedListener(new OnPausedListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -229,14 +226,18 @@ public class VoiceAlert extends DialogFragment {
     }
 
     private void pararGrabacion(){
-        timerTextView.setVisibility(View.GONE);
-        record.setVisibility(View.GONE);
-        mConfirmar.setVisibility(View.VISIBLE);
-        mediaRecorder.stop();
-        //timeSwapBuff += timeInMilliseconds;
-        customHandler.removeCallbacks(updateTimerThread);
-        Toast.makeText(getActivity(), "Recording Completed",
-                Toast.LENGTH_LONG).show();
+        Log.d(TAG, mediaRecorder.toString());
+        try{
+            mediaRecorder.stop();
+            timerTextView.setVisibility(View.GONE);
+            record.setVisibility(View.GONE);
+            mConfirmar.setVisibility(View.VISIBLE);
+            customHandler.removeCallbacks(updateTimerThread);
+        }catch(RuntimeException stopException){
+            Toast.makeText(getActivity(), "No se grabo ningun comentario.", Toast.LENGTH_LONG).show();
+            timerTextView.setVisibility(View.GONE);
+            customHandler.removeCallbacks(updateTimerThread);
+        }
     }
 
     private void grabarAudio(){
@@ -252,7 +253,6 @@ public class VoiceAlert extends DialogFragment {
         MediaRecorderReady();
 
         try {
-            Log.d(TAG, AudioSavePathInDevice);
             mediaRecorder.setMaxDuration(MAX_DURATION * 1000);
             mediaRecorder.prepare();
             mediaRecorder.start();
@@ -265,9 +265,6 @@ public class VoiceAlert extends DialogFragment {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
-        Toast.makeText(getActivity(), "Recording started",
-                Toast.LENGTH_LONG).show();
 
     }
 

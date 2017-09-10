@@ -43,7 +43,7 @@ public class Comentario {
         result.put("texto", texto);
         result.put("aproved", aproved);
         result.put("type", type);
-        result.put("timestamp",  -1 * System.currentTimeMillis());
+        result.put("timestamp",  -0.001 * System.currentTimeMillis());
         return result;
     }
 }

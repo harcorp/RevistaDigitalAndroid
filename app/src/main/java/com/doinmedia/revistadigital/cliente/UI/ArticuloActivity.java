@@ -15,8 +15,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.MenuItem;
@@ -56,7 +54,6 @@ import io.github.yavski.fabspeeddial.SimpleMenuListenerAdapter;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
-
 
 public class ArticuloActivity extends BaseActivity {
 
@@ -116,12 +113,10 @@ public class ArticuloActivity extends BaseActivity {
                 int id = menuItem.getItemId();
 
                 if(id == R.id.action_text){
-                    Toast.makeText(getApplicationContext(), "Texto", Toast.LENGTH_LONG).show();
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     TextAlert alerta = TextAlert.addString(mKey);
                     alerta.show(fragmentManager, "tagAlerta");
                 }else if(id == R.id.action_voice){
-                    Toast.makeText(getApplicationContext(), "Voice", Toast.LENGTH_LONG).show();
                     if(checkPermission()) {
                         FragmentManager fragmentManager = getSupportFragmentManager();
                         VoiceAlert dialogo = VoiceAlert.addSomeString(mKey);
@@ -130,7 +125,6 @@ public class ArticuloActivity extends BaseActivity {
                         requestPermission();
                     }
                 }else if(id == R.id.action_video){
-                    Toast.makeText(getApplicationContext(), "Video", Toast.LENGTH_LONG).show();
                     Intent intent = new Intent(getApplicationContext(), CameraActivity.class);
                     startActivityForResult(intent, 1);
 
@@ -240,10 +234,10 @@ public class ArticuloActivity extends BaseActivity {
                             PackageManager.PERMISSION_GRANTED;
 
                     if (StoragePermission && RecordPermission) {
-                        Toast.makeText(ArticuloActivity.this, "Permission Granted",
+                        Toast.makeText(ArticuloActivity.this, "Permisos Garantizados",
                                 Toast.LENGTH_LONG).show();
                     } else {
-                        Toast.makeText(ArticuloActivity.this,"Permission Denied",Toast.LENGTH_LONG).show();
+                        Toast.makeText(ArticuloActivity.this,"Permisos Denegados. Intente de nuevo",Toast.LENGTH_LONG).show();
                     }
                 }
                 break;

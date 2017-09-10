@@ -15,8 +15,8 @@ android {
         applicationId "com.doinmedia.revistadigital.cliente"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode 3
+        versionName "1.0.0"
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -24,17 +24,18 @@ android {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
     dexOptions {
         maxProcessCount 2
         javaMaxHeapSize "5g"
+        incremental true
     }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-
     compile files('libs/YouTubeAndroidPlayerApi.jar')
     compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
     compile 'com.android.support:recyclerview-v7:26.0.0-alpha1'
@@ -59,7 +60,6 @@ dependencies {
     compile 'com.google.android.exoplayer:exoplayer-core:r2.5.1'
     compile 'com.google.android.exoplayer:exoplayer-dash:r2.5.1'
     compile 'com.google.android.exoplayer:exoplayer-ui:r2.5.1'
-
     testCompile 'junit:junit:4.12'
 }
 
