@@ -52,7 +52,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/version"
+                android:id="@+id/contacto_version"
                 android:textAlignment="center"
                 android:textColor="@color/white" />
         </LinearLayout>

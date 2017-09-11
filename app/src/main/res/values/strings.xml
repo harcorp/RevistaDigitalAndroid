@@ -45,6 +45,6 @@
     <string name="description_info">Información.</string>
     <string name="permission_request">Necesitamos permisos para acceder a la camara y el microfono..</string>
     <string name="camera_error">Este dispositivo no soporta la funcion de camara.</string>
-    <string name="intro_message">Grabe un comentario en video no mayor a 1 minuto.</string>
+    <string name="intro_message">Grabe un comentario en video no mayor a 3 minutos.</string>
     <string name="request_permission">Neceistamos permisos para funcionar.</string>
 </resources>

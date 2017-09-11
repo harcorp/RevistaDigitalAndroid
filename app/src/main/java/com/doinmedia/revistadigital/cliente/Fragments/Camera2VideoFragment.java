@@ -86,7 +86,7 @@ public class Camera2VideoFragment extends Fragment
         INVERSE_ORIENTATIONS.append(Surface.ROTATION_270, 0);
     }
 
-    private static final int MAX_VIDEO_DURATION = 60 * 1000;
+    private static final int MAX_VIDEO_DURATION = 60 * 1000 * 3;
     private static final int ID_TIME_COUNT = 0x1006;
 
     /**
