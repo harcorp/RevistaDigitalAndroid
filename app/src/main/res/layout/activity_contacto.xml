@@ -48,7 +48,30 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:text="Correo: rev.planteamientoseneducacion@epe.edu.co"/>
-
+            <LinearLayout
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:textAlignment="center">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Siguenos en: "
+                    android:textColor="@color/white"
+                    android:layout_marginRight="8dp"/>
+                <Button
+                    android:id="@+id/contacto_facebook"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:backgroundTint="@color/white"
+                    android:background="@drawable/ic_logo_facebook"
+                    android:layout_marginRight="8dp"/>
+                <Button
+                    android:id="@+id/contacto_twitter"
+                    android:layout_width="24dp"
+                    android:backgroundTint="@color/white"
+                    android:layout_height="24dp"
+                    android:background="@drawable/ic_logo_twitter"/>
+            </LinearLayout>
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
