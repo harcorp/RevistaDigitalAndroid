@@ -31,7 +31,7 @@ import static android.content.ContentValues.TAG;
 
 public class TextAlert extends DialogFragment {
 
-    private static String mKey, mUid;
+    private static String mKey, mUid, mParent;
     private TextView mInfoText, mContador;
     private EditText mComentario;
     private Button mEnviar;
@@ -39,9 +39,10 @@ public class TextAlert extends DialogFragment {
     private DatabaseReference mRef;
     private FirebaseAuth mAuth;
 
-    public static TextAlert addString(String temp){
+    public static TextAlert addString(String temp, String parent){
         TextAlert f = new TextAlert();
         mKey = temp;
+        mParent = parent;
         return f;
     }
 
@@ -77,8 +78,8 @@ public class TextAlert extends DialogFragment {
             @Override
             public void afterTextChanged(Editable s) {
                 String tamanoString = String.valueOf(s.length());
-                mContador.setText(tamanoString + "/255");
-                if(s.length() == 255){
+                mContador.setText(tamanoString + "/3000");
+                if(s.length() == 3000){
                     mContador.setTextColor(getColor(getActivity(), R.color.colorAccent));
                 }
             }
@@ -104,7 +105,7 @@ public class TextAlert extends DialogFragment {
     private void publicarComentario(){
         String key = mRef.child("comentarios/" + mKey).push().getKey();
         String coment = mComentario.getText().toString();
-        Comentario comentario = new Comentario(mUid, null, coment, false, 1);
+        Comentario comentario = new Comentario(mUid, null, coment, false, 1, mParent);
         Map<String, Object> postValues = comentario.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();

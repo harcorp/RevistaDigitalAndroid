@@ -29,6 +29,7 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 
@@ -87,6 +88,7 @@ public class MainActivity extends BaseActivity
     private ArrayList<String> imagesArray = new ArrayList<String>();
     private ArrayList<String> linksArray = new ArrayList<String>();
     private int currentPage = 0;
+    private TextView mAudDes;
 
 
     @Override
@@ -113,6 +115,7 @@ public class MainActivity extends BaseActivity
         mSeek = (SeekBar) findViewById(R.id.inicio_audio_seek);
         mPlay = (Button) findViewById(R.id.inicio_audio_play);
         mStop = (Button) findViewById(R.id.inicio_audio_pause);
+        mAudDes = (TextView) findViewById(R.id.inicio_audDescription);
 
         setupRecyclerView();
 
@@ -123,7 +126,7 @@ public class MainActivity extends BaseActivity
                 cargar_video(dato.videoId);
                 controlVoice(dato.audio);
                 StorageReference ref = FirebaseStorage.getInstance().getReference().child(dato.imagen);
-
+                mAudDes.setText(dato.texto);
                 Glide.with(mContext)
                         .using(new FirebaseImageLoader())
                         .load(ref)

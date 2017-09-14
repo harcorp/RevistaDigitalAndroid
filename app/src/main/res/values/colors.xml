@@ -10,4 +10,6 @@
 
     <color name="gray200">#EEEEEE</color>
     <color name="fondo">#F5F5F5</color>
+
+    <color name="fondo_texto">#80000000</color>
 </resources>

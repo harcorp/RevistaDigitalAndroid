@@ -64,7 +64,7 @@ public class VoiceAlert extends DialogFragment {
     private Button mAgregar;
     private ProgressBar mProgress;
     private DatabaseReference mRef;
-    private static String mKey, mUid;
+    private static String mKey, mUid, mParent;
 
     public TextView timerTextView, mInfoText;
     private long startHTime = 0L;
@@ -74,9 +74,10 @@ public class VoiceAlert extends DialogFragment {
     private static final Integer MAX_DURATION = 59;
     private FirebaseAuth mAuth;
 
-    public static VoiceAlert addSomeString(String temp){
+    public static VoiceAlert addSomeString(String temp, String parent){
         VoiceAlert f = new VoiceAlert();
         mKey = temp;
+        mParent = parent;
         return f;
     };
 
@@ -172,7 +173,7 @@ public class VoiceAlert extends DialogFragment {
     private void cargarDatos(){
         String key = mRef.child("comentarios/" + mKey).push().getKey();
         final String filename = "audios/" + mKey + "/" + NameOfFile + ".3gp";
-        Comentario comentario = new Comentario(mUid, filename, null, false, 2);
+        Comentario comentario = new Comentario(mUid, filename, null, false, 2, mParent);
         Map<String, Object> postValues = comentario.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();

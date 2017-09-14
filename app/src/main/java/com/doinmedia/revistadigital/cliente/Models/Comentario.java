@@ -17,17 +17,19 @@ public class Comentario {
     public String texto;
     public Boolean aproved;
     private Integer type;
+    public String parent;
 
     public Comentario(){
 
     }
 
-    public Comentario(String uid_user, String file, String texto, Boolean aproved, Integer type){
+    public Comentario(String uid_user, String file, String texto, Boolean aproved, Integer type, String parent){
         this.uid_user = uid_user;
         this.file = file;
         this.texto = texto;
         this.aproved = aproved;
         this.type = type;
+        this.parent = parent;
     }
 
     public Integer getType() {
@@ -41,6 +43,7 @@ public class Comentario {
         result.put("uid_user", uid_user);
         result.put("file", file);
         result.put("texto", texto);
+        result.put("parent", parent);
         result.put("aproved", aproved);
         result.put("type", type);
         result.put("timestamp",  -0.001 * System.currentTimeMillis());

@@ -114,12 +114,12 @@ public class ArticuloActivity extends BaseActivity {
 
                 if(id == R.id.action_text){
                     FragmentManager fragmentManager = getSupportFragmentManager();
-                    TextAlert alerta = TextAlert.addString(mKey);
+                    TextAlert alerta = TextAlert.addString(mKey, mParent);
                     alerta.show(fragmentManager, "tagAlerta");
                 }else if(id == R.id.action_voice){
                     if(checkPermission()) {
                         FragmentManager fragmentManager = getSupportFragmentManager();
-                        VoiceAlert dialogo = VoiceAlert.addSomeString(mKey);
+                        VoiceAlert dialogo = VoiceAlert.addSomeString(mKey, mParent);
                         dialogo.show(fragmentManager, "tagAlerta");
                     } else {
                         requestPermission();
@@ -205,7 +205,7 @@ public class ArticuloActivity extends BaseActivity {
 
     private void cargarDatosVideo(String filename){
         String key = mRef.child("comentarios/" + mKey).push().getKey();
-        Comentario comentario = new Comentario(mUserUid, filename, null, false, 3);
+        Comentario comentario = new Comentario(mUserUid, filename, null, false, 3, mParent);
         Map<String, Object> postValues = comentario.toMap();
 
         Map<String, Object> childUpdates = new HashMap<>();
