@@ -13,18 +13,20 @@ public class Articulos {
     public String descripcion;
     public Long fecha;
     public String type;
+    public String url;
     public String thumbnail;
 
     public Articulos(){
 
     }
 
-    public Articulos(String file, String nombre, String descripcion, Long fecha, String type, String thumbnail){
+    public Articulos(String file, String nombre, String descripcion, Long fecha, String type, String thumbnail, String url){
         this.file = file;
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fecha = fecha;
         this.type = type;
         this.thumbnail = thumbnail;
+        this.url = url;
     }
 }

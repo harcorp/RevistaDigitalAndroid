@@ -64,7 +64,7 @@ public class ArticuloActivity extends BaseActivity {
 
     private String mKey, mTitle, mParent, mUserUid;
 
-    private TextView mTitulo, mDescripcion;
+    private TextView mTitulo, mDescripcion, mComentario;
     private DatabaseReference mRef;
     private StorageReference mStorage;
     public static final int RequestPermissionCode = 1;
@@ -85,10 +85,10 @@ public class ArticuloActivity extends BaseActivity {
         mKey = getIntent().getStringExtra(EXTRA_POST_KEY);
         mRef = FirebaseDatabase.getInstance().getReference();
         mTitle = getIntent().getStringExtra(EXTRA_POST_TITLE);
-        setTitle(mTitle);
 
         mTitulo = (TextView)findViewById(R.id.single_titulo);
         mDescripcion = (TextView)findViewById(R.id.single_descripcion);
+        mComentario = (TextView) findViewById(R.id.single_comentario);
         mTitulo.setText(mTitle);
         configurarRecycler();
         mRef.child("articulos").child(mParent).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -142,9 +142,11 @@ public class ArticuloActivity extends BaseActivity {
                     mUserUid = user.getUid();
                     Log.d(TAG, "Logged");
                     fabSpeedDial.setVisibility(View.VISIBLE);
+                    mComentario.setVisibility(View.VISIBLE);
                 } else {
                     Log.d(TAG, "NO LOGGED");
                     fabSpeedDial.setVisibility(View.GONE);
+                    mComentario.setVisibility(View.GONE);
                 }
             }
         };

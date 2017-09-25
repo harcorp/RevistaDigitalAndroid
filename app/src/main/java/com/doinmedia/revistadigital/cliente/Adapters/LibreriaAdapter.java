@@ -93,22 +93,18 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
                 .into(view.thumbnail);
 
         view.descargar.setCompoundDrawables(mDrawable, null, null, null);
-        StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
+        /*StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
         mStorageRef.child(articulo.file).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
             public void onSuccess(Uri uri) {
                 urlReady = true;
                 articulo.file = uri.toString();
             }
-        });
+        });*/
         view.descargar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(urlReady){
-                    beginDownload(articulo.file);
-                }else{
-                    Toast.makeText(mContext, "No se ha podido descargar. Intente de nuevo", Toast.LENGTH_SHORT).show();
-                }
+            beginDownload(articulo.url);
 
             }
         });
@@ -117,6 +113,7 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
     private void beginDownload(String url) {
         Uri uri = Uri.parse(url); // missing 'http://' will cause crashed
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mContext.startActivity(intent);
     }
 

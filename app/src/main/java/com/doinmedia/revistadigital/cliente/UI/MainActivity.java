@@ -71,7 +71,7 @@ public class MainActivity extends BaseActivity
     private PublicacionAdapter mAdapter;
     private ArrayList<Publicacion> mAdapterItems;
     private ArrayList<String> mAdapterKeys;
-    private ImageView mImagenInicio;
+    private ImageView mImagenInicio, mImagen2;
     private Button mPlay, mStop;
     private SeekBar mSeek;
     public Context mContext;
@@ -97,6 +97,7 @@ public class MainActivity extends BaseActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setTitleTextAppearance(this, R.style.ActionBarTitle);
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -112,12 +113,12 @@ public class MainActivity extends BaseActivity
         mContext = this.getApplicationContext();
         mViewPager = (ViewPager) findViewById(R.id.banners_inicio);
         mImagenInicio = (ImageView) findViewById(R.id.inicio_imagen);
+        mImagen2 = (ImageView) findViewById(R.id.inicio_imagen2);
         mSeek = (SeekBar) findViewById(R.id.inicio_audio_seek);
         mPlay = (Button) findViewById(R.id.inicio_audio_play);
         mStop = (Button) findViewById(R.id.inicio_audio_pause);
         mAudDes = (TextView) findViewById(R.id.inicio_audDescription);
 
-        setupRecyclerView();
 
         mRef.child("datos").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -126,6 +127,8 @@ public class MainActivity extends BaseActivity
                 cargar_video(dato.videoId);
                 controlVoice(dato.audio);
                 StorageReference ref = FirebaseStorage.getInstance().getReference().child(dato.imagen);
+                StorageReference ref2 = FirebaseStorage.getInstance().getReference().child(dato.imagen2);
+
                 mAudDes.setText(dato.texto);
                 Glide.with(mContext)
                         .using(new FirebaseImageLoader())
@@ -133,6 +136,12 @@ public class MainActivity extends BaseActivity
                         .fitCenter()
                         .placeholder(R.drawable.spinner_animation)
                         .into(mImagenInicio);
+                Glide.with(mContext)
+                        .using(new FirebaseImageLoader())
+                        .load(ref2)
+                        .fitCenter()
+                        .placeholder(R.drawable.spinner_animation)
+                        .into(mImagen2);
             }
 
             @Override
@@ -174,6 +183,9 @@ public class MainActivity extends BaseActivity
                 }
             }
         };
+
+        setupRecyclerView();
+
     }
 
     private void cargar_video(String id){

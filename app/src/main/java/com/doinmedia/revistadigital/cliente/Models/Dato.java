@@ -9,16 +9,18 @@ public class Dato {
     public String imagen;
     public String audio;
     public String texto;
+    public String imagen2;
 
 
     public Dato(){
 
     }
 
-    public Dato(String videoId, String imagen, String audio, String texto){
+    public Dato(String videoId, String imagen, String audio, String texto, String imagen2){
         this.videoId = videoId;
         this.imagen = imagen;
         this.audio = audio;
         this.texto = texto;
+        this.imagen2 = imagen2;
     }
 }

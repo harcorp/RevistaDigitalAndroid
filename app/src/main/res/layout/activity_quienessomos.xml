@@ -12,11 +12,10 @@ xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/card_margin">
-        <TextView
+        <ImageView
             android:layout_width="match_parent"
-            android:padding="16dp"
             android:layout_height="wrap_content"
-            android:id="@+id/quienessomos_text"/>
+            android:id="@+id/quienessomos_image"/>
     </android.support.v7.widget.CardView>
     </ScrollView>
 </FrameLayout>

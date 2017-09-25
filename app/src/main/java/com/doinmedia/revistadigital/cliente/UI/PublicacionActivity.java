@@ -69,8 +69,6 @@ public class PublicacionActivity extends AppCompatActivity {
             editor.putString("last_uid", mKey);
             editor.commit();
         }
-        mTitle = getIntent().getStringExtra(EXTRA_POST_TITLE);
-        setTitle(mTitle);
 
         mRef = FirebaseDatabase.getInstance().getReference();
 

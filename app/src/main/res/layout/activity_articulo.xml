@@ -95,6 +95,8 @@
         android:layout_marginBottom="28dp"
         android:textColor="@color/white"
         android:padding="8dp"
+        android:visibility="gone"
+        android:id="@+id/single_comentario"
         android:background="@color/fondo_texto"
         android:layout_marginEnd="75dp"/>
     <io.github.yavski.fabspeeddial.FabSpeedDial
