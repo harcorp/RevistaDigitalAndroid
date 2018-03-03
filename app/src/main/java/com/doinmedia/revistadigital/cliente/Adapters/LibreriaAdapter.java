@@ -126,11 +126,8 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
         view.descargar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "File URL: " + articulo.fileURL);
-                Log.d(TAG, "URL: " + articulo.url);
-                Log.d(TAG, "File: " + articulo.file);
 
-                if(articulo.file != null) {
+                if(articulo.fileURL != null) {
                     beginDownload(articulo.fileURL);
                 } else if (articulo.url != null) {
                     beginDownload(articulo.url);
