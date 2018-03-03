@@ -59,6 +59,14 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/file_list_fecha"
                 android:text="Adquirir" />
+
+            <Button
+                android:id="@+id/file_list_url"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/file_list_download"
+                android:text="IR AL SITIO" />
         </RelativeLayout>
 
     </android.support.v7.widget.CardView>

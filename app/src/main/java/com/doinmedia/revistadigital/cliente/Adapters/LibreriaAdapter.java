@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ import java.util.Locale;
 
 public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.ViewHolder, Articulos> {
 
+    public static final String TAG = LibreriaAdapter.class.getSimpleName();
     private Context mContext;
     private boolean urlReady = false;
 
@@ -39,6 +41,7 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
         public TextView nombre, descripcion, fecha;
         public ImageView thumbnail;
         public Button descargar;
+        public Button link;
 
         public ViewHolder(View itemView){
             super(itemView);
@@ -47,6 +50,7 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
             fecha = (TextView) itemView.findViewById(R.id.file_list_fecha);
             thumbnail = (ImageView) itemView.findViewById(R.id.file_list_image);
             descargar = (Button) itemView.findViewById(R.id.file_list_download);
+            link = (Button) itemView.findViewById(R.id.file_list_url);
         }
     }
 
@@ -77,11 +81,16 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
         final Articulos articulo = getItem(position);
         view.nombre.setText(articulo.nombre);
         view.descripcion.setText(articulo.descripcion);
-        view.fecha.setText(articulo.type +  " - " + getDate(articulo.fecha));
+        articulo.type = articulo.type == "" ? articulo.type +  " - " : "";
+        view.fecha.setText(articulo.type + getDate(articulo.fecha));
 
         Drawable mDrawable = Tools.getDrawable(mContext, R.drawable.ic_file_download);
         mDrawable.setBounds( 0, 0, 60, 60 );
         mDrawable.setTint(Tools.getColor(mContext, R.color.black));
+
+        Drawable mDrawUrl = Tools.getDrawable(mContext, R.drawable.ic_public);
+        mDrawUrl.setBounds(0,0,60,60);
+        mDrawUrl.setTint(Tools.getColor(mContext, R.color.black));
 
         StorageReference ref = FirebaseStorage.getInstance().getReference().child(articulo.thumbnail);
 
@@ -93,6 +102,7 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
                 .into(view.thumbnail);
 
         view.descargar.setCompoundDrawables(mDrawable, null, null, null);
+        view.link.setCompoundDrawables(mDrawUrl, null, null, null);
         /*StorageReference mStorageRef = FirebaseStorage.getInstance().getReference();
         mStorageRef.child(articulo.file).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
@@ -101,11 +111,30 @@ public class LibreriaAdapter extends FirebaseRecyclerAdapter<LibreriaAdapter.Vie
                 articulo.file = uri.toString();
             }
         });*/
+
+        if( articulo.url != null && articulo.file != null){
+            view.link.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    beginDownload(articulo.url);
+                }
+            });
+        } else {
+            view.link.setVisibility(View.GONE);
+        }
+
         view.descargar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            beginDownload(articulo.url);
+                Log.d(TAG, "File URL: " + articulo.fileURL);
+                Log.d(TAG, "URL: " + articulo.url);
+                Log.d(TAG, "File: " + articulo.file);
 
+                if(articulo.file != null) {
+                    beginDownload(articulo.fileURL);
+                } else if (articulo.url != null) {
+                    beginDownload(articulo.url);
+                }
             }
         });
     }

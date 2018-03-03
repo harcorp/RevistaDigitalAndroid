@@ -15,12 +15,14 @@ public class Articulos {
     public String type;
     public String url;
     public String thumbnail;
+    public String fileURL;
 
     public Articulos(){
 
     }
 
-    public Articulos(String file, String nombre, String descripcion, Long fecha, String type, String thumbnail, String url){
+    public Articulos(String file, String nombre, String descripcion, Long fecha, String type,
+                     String thumbnail, String url, String fileURL){
         this.file = file;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -28,5 +30,6 @@ public class Articulos {
         this.type = type;
         this.thumbnail = thumbnail;
         this.url = url;
+        this.fileURL = fileURL;
     }
 }
