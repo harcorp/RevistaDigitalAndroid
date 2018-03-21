@@ -2,6 +2,7 @@ package com.doinmedia.revistadigital.cliente.UI;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Rect;
 import android.media.AudioManager;
@@ -15,6 +16,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.TypedValue;
@@ -34,9 +36,12 @@ import android.widget.Toast;
 
 
 import com.bumptech.glide.Glide;
+import com.doinmedia.revistadigital.cliente.Adapters.ArticulosAdapter;
 import com.doinmedia.revistadigital.cliente.Adapters.BannerAdapter;
+import com.doinmedia.revistadigital.cliente.Adapters.IndiceAdapter;
 import com.doinmedia.revistadigital.cliente.Adapters.PublicacionAdapter;
 import com.doinmedia.revistadigital.cliente.Fragments.YoutubeFragment;
+import com.doinmedia.revistadigital.cliente.Models.Articulo;
 import com.doinmedia.revistadigital.cliente.Models.Banner;
 import com.doinmedia.revistadigital.cliente.Models.Dato;
 import com.doinmedia.revistadigital.cliente.Models.Publicacion;
@@ -67,9 +72,10 @@ public class MainActivity extends BaseActivity
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private DatabaseReference mRef;
-    private RecyclerView recycler;
-    private PublicacionAdapter mAdapter;
-    private ArrayList<Publicacion> mAdapterItems;
+    private RecyclerView recycler, indiceRecycler;
+    private ArticulosAdapter mAdapter;
+    private IndiceAdapter mIndiceAdapter;
+    private ArrayList<Articulo> mAdapterItems;
     private ArrayList<String> mAdapterKeys;
     private ImageView mImagenInicio, mImagen2;
     private Button mPlay, mStop;
@@ -88,7 +94,7 @@ public class MainActivity extends BaseActivity
     private ArrayList<String> imagesArray = new ArrayList<String>();
     private ArrayList<String> linksArray = new ArrayList<String>();
     private int currentPage = 0;
-    private TextView mAudDes;
+    private TextView mAudDes, mVideoDes;
 
 
     @Override
@@ -118,6 +124,7 @@ public class MainActivity extends BaseActivity
         mPlay = (Button) findViewById(R.id.inicio_audio_play);
         mStop = (Button) findViewById(R.id.inicio_audio_pause);
         mAudDes = (TextView) findViewById(R.id.inicio_audDescription);
+        mVideoDes = (TextView) findViewById(R.id.videoDescription);
 
 
         mRef.child("datos").addListenerForSingleValueEvent(new ValueEventListener() {
@@ -125,6 +132,7 @@ public class MainActivity extends BaseActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Dato dato = dataSnapshot.getValue(Dato.class);
                 cargar_video(dato.videoId);
+                mVideoDes.setText(dato.videoText);
                 controlVoice(dato.audio);
                 StorageReference ref = FirebaseStorage.getInstance().getReference().child(dato.imagen);
                 StorageReference ref2 = FirebaseStorage.getInstance().getReference().child(dato.imagen2);
@@ -185,6 +193,7 @@ public class MainActivity extends BaseActivity
         };
 
         setupRecyclerView();
+        setupIndiceRecycler();
 
     }
 
@@ -223,16 +232,36 @@ public class MainActivity extends BaseActivity
     }
 
     public void setupRecyclerView(){
+        SharedPreferences prefs = getSharedPreferences("RevistaPlanteamientosPrefs",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_uid", "-Kay5nfVMHrstAhg6EOk");
+        editor.apply();
         recycler = (RecyclerView) findViewById(R.id.reciclador_publicaciones);
         recycler.setHasFixedSize(true);
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
         recycler.setLayoutManager(mLayoutManager);
+
         recycler.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(5), true));
         recycler.setItemAnimator(new DefaultItemAnimator());
-        mAdapter = new PublicacionAdapter(getApplicationContext(), mRef.child("publicaciones/"), Publicacion.class, mAdapterItems, mAdapterKeys);
+        mAdapter = new ArticulosAdapter(getApplicationContext(), mRef.child("articulos/-Kay5nfVMHrstAhg6EOk").orderByChild("timestamp"), Articulo.class, mAdapterItems, mAdapterKeys);
         recycler.setAdapter(mAdapter);
         recycler.setVisibility(View.VISIBLE);
+    }
 
+    public void setupIndiceRecycler() {
+        SharedPreferences prefs = getSharedPreferences("RevistaPlanteamientosPrefs",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("last_uid", "-Kay5nfVMHrstAhg6EOk");
+        editor.apply();
+        indiceRecycler = (RecyclerView) findViewById(R.id.reciclador_indice);
+        indiceRecycler.setHasFixedSize(true);
+        RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(this, 2);
+        indiceRecycler.setLayoutManager(mLayoutManager);
+        indiceRecycler.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(5), true));
+        indiceRecycler.setItemAnimator(new DefaultItemAnimator());
+        mIndiceAdapter = new IndiceAdapter(getApplicationContext(), mRef.child("articulos/-Kay5nfVMHrstAhg6EOk").orderByChild("timestamp"), Articulo.class, mAdapterItems, mAdapterKeys);
+        indiceRecycler.setAdapter(mIndiceAdapter);
+        indiceRecycler.setVisibility(View.VISIBLE);
     }
 
 

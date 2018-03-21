@@ -6,7 +6,7 @@
     <android.support.v7.widget.CardView
         android:id="@+id/articulo_card_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="@dimen/card_margin"
         android:elevation="3dp"
@@ -24,20 +24,6 @@
                 android:clickable="true"
                 android:adjustViewBounds="true"
                 android:contentDescription="Caratula" />
-
-            <TextView
-                android:id="@+id/articulo_title"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/articulo_thumbnail"
-                android:paddingLeft="@dimen/publicacion_title_padding"
-                android:paddingRight="@dimen/publicacion_title_padding"
-                android:paddingTop="@dimen/publicacion_title_padding"
-                android:textColor="@color/card_title"
-                android:textSize="@dimen/publicacion_title"
-                android:textAlignment="center" />
-
-
         </RelativeLayout>
 
     </android.support.v7.widget.CardView>

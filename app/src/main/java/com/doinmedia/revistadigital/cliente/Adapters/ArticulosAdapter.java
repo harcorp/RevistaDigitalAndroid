@@ -32,13 +32,11 @@ public class ArticulosAdapter extends FirebaseRecyclerAdapter<ArticulosAdapter.V
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public CardView cv;
-        public TextView titulo;
         public ImageView thumbnail;
 
         public ViewHolder(View itemView){
             super(itemView);
             cv = (CardView) itemView.findViewById(R.id.articulo_card_view);
-            titulo = (TextView) itemView.findViewById(R.id.articulo_title);
             thumbnail = (ImageView) itemView.findViewById(R.id.articulo_thumbnail);
         }
     }
@@ -63,7 +61,6 @@ public class ArticulosAdapter extends FirebaseRecyclerAdapter<ArticulosAdapter.V
     public void onBindViewHolder(final ArticulosAdapter.ViewHolder viewHolder, final int position) {
         Articulo model = getItem(position);
         StorageReference ref = FirebaseStorage.getInstance().getReference().child(model.thumbnail);
-        viewHolder.titulo.setText(model.titulo);
         Glide.with(mContext)
                 .using(new FirebaseImageLoader())
                 .load(ref)

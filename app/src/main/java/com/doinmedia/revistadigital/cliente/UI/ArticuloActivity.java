@@ -44,6 +44,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -64,7 +66,7 @@ public class ArticuloActivity extends BaseActivity {
 
     private String mKey, mTitle, mParent, mUserUid;
 
-    private TextView mTitulo, mDescripcion, mComentario;
+    private TextView mTitulo, mDescripcion, mComentario, mAuthor;
     private DatabaseReference mRef;
     private StorageReference mStorage;
     public static final int RequestPermissionCode = 1;
@@ -89,6 +91,8 @@ public class ArticuloActivity extends BaseActivity {
         mTitulo = (TextView)findViewById(R.id.single_titulo);
         mDescripcion = (TextView)findViewById(R.id.single_descripcion);
         mComentario = (TextView) findViewById(R.id.single_comentario);
+        mAuthor = (TextView) findViewById(R.id.single_author);
+
         mTitulo.setText(mTitle);
         configurarRecycler();
         mRef.child("articulos").child(mParent).child(mKey).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -98,6 +102,7 @@ public class ArticuloActivity extends BaseActivity {
                 Articulo data = dataSnapshot.getValue(Articulo.class);
                 cargar_video(data.video);
                 mDescripcion.setText(data.descripcion);
+                mAuthor.setText(data.author);
             }
 
             @Override
