@@ -130,7 +130,8 @@ public class MainActivity extends BaseActivity
         mRef.child("datos").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Dato dato = dataSnapshot.getValue(Dato.class);
+                final Dato dato = dataSnapshot.getValue(Dato.class);
+
                 cargar_video(dato.videoId);
                 mVideoDes.setText(dato.videoText);
                 controlVoice(dato.audio);

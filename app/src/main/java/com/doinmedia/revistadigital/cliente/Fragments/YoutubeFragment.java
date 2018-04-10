@@ -43,7 +43,6 @@ public class YoutubeFragment extends Fragment{
                 if (!wasRestored) {
                     player.setPlayerStyle(YouTubePlayer.PlayerStyle.DEFAULT);
                     player.loadVideo(video_id);
-                    player.play();
                 }
             }
 

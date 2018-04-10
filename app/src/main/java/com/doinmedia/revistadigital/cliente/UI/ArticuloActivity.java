@@ -218,6 +218,7 @@ public class ArticuloActivity extends BaseActivity {
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/comentarios/" + mKey + "/" + key, postValues);
         childUpdates.put("/user-comentarios/" + mUserUid + "/" + mKey + "/" + key, postValues);
+        hideProgressDialog();
         mRef.updateChildren(childUpdates).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
